@@ -6,12 +6,21 @@ from PIL import Image  # <-- LÍNEA NUEVA: Librería necesaria para leer las fot
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
 st.set_page_config(page_title="Ideogramas y textos Clásicos", page_icon="⛩️", layout="centered")
-st.title("玄永 XuánYǒng")
 
-# <-- LÍNEAS NUEVAS: Imagen decorativa debajo del título principal
-st.image("https://images.unsplash.com/photo-1508898578281-774ac4893c0c?q=80&w=800", 
-         caption="Estudio paleográfico, exégesis y resonancia médica de los caracteres antiguos", 
-         use_container_width=True)
+# <-- CÓDIGO NUEVO: Título y Caligrafía Minimalista (Sumi-e digital)
+st.markdown("""
+    <div style='text-align: center; margin-top: 20px; margin-bottom: 20px;'>
+        <h1 style='font-family: "Arial", sans-serif; font-size: 30px; color: #333; margin-bottom: 5px;'>玄永 XuánYǒng</h1>
+        <div style='font-family: "Kaiti", "STKaiti", "KaiTi_GB2312", "BiauKai", serif; font-size: 110px; font-weight: normal; color: #1a1a1a; letter-spacing: 20px;'>
+            玄永
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+st.caption("<div style='text-align: center; font-size: 16px; color: #666;'>Estudio paleográfico, exégesis y resonancia médica de los caracteres antiguos</div>", unsafe_allow_html=True)
+
+st.markdown("<p style='text-align: center;'>Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-weight: bold;'>INTRODUCE UN CONCEPTO, IDEOGRAMA, O UNA PREGUNTA</p>", unsafe_allow_html=True)
 
 st.markdown("Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol")
 st.markdown("INTRODUCE UN CONCEPTO, IDEOGRAMA, O UNA PREGUNTA")
