@@ -14,15 +14,12 @@ st.markdown("""
         <!-- 1. Ideograma principal estilo pincel (Caoshu) -->
         <div style='font-family: "Caoshu", "Xingkai SC", "Kaiti", "STKaiti", "KaiTi_GB2312", serif; font-size: 120px; font-weight: normal; color: #111; letter-spacing: 10px; line-height: 1.1;'>
             玄永
-        </div>
-        <!-- 2. Subtítulo justo debajo con tipografía elegante/cursiva -->
-        <h1 style='font-family: "STXingkai", "Kaiti", "Georgia", serif; font-size: 28px; color: #444; margin-top: 5px; margin-bottom: 15px; font-weight: normal; font-style: italic;'>
-            玄永 XuánYǒng
+
         </h1>
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center; color: #333;'>Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
 # ==========================================
