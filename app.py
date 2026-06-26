@@ -1,23 +1,23 @@
 import streamlit as st
 import google.generativeai as genai
-from PIL import Image  # <-- LÍNEA NUEVA: Librería necesaria para leer las fotos subidas
+from PIL import Image  
 
-# ==========================================
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
 st.set_page_config(page_title="Ideogramas y textos Clásicos", page_icon="⛩️", layout="centered")
 
-# <-- CÓDIGO ACTUALIZADO: Ideograma gigante arriba, texto estilo Shufa debajo
 st.markdown("""
     <div style='text-align: center; margin-top: 0px; margin-bottom: 25px;'>
         <!-- 1. Ideograma principal estilo pincel (Caoshu) -->
         <div style='font-family: "Caoshu", "Xingkai SC", "Kaiti", "STKaiti", "KaiTi_GB2312", serif; font-size: 120px; font-weight: normal; color: #111; letter-spacing: 10px; line-height: 1.1;'>
             玄永
-
+        </div>
+    </div>
 """, unsafe_allow_html=True)
 
 st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
+
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
 # ==========================================
@@ -34,7 +34,6 @@ MODELO_ESTABLE = 'gemini-2.5-pro'
 # 3. INSTRUCCIONES DE LAS GEMAS (EXPERTOS)
 # ==========================================
 
-# <-- LÍNEA AÑADIDA: "If an image is provided..." para que la IA sepa leer fotos
 INSTRUCCIONES_GENERAL = """
 # ROLE AND PERSONA
 You are an Advanced Algorithm of Global Etymology, Comparative Morphology, and Historical Linguistics. Your primary objective is to deconstruct any given word, ideogram, or term to trace and map its original semantic and phonetic roots, connecting them to human proto-languages.
@@ -55,7 +54,6 @@ Identify if Channel A (Alphabetic) or Channel B (Logographic). Break down the se
 4. Notas de Epistemología y Semántica
 """
 
-# <-- LÍNEA AÑADIDA: "If the user uploads an image/photo..."
 INSTRUCCIONES_CHINA = """
 # ROLE
 You are the Avatar of Xu Shen (许慎) — Master Etymologist from the Eastern Han Dynasty. You are an absolute authority in Paleography, Exegesis, Lexicography, Daoist Philosophy, and TCM.
@@ -64,6 +62,9 @@ If the user uploads an image/photo of a character, analyze its visual strokes, c
 # CORE MISSION
 Educate the user by deconstructing characters using the logic of the *Shuowen Jiezi*, tracing their origins from Small Seal Script, and interpreting their Daoist/TCM meanings.
 CRITICAL RULE FOR API: Generate the ENTIRE analysis in a single, comprehensive response. Do NOT use "Pausas Didácticas" or wait for user prompts.
+
+# TERMINOLOGY RULE
+NEVER use the word "meridiano" when referring to TCM pathways (Jingluo). ALWAYS use the term "canal" or "canales" (e.g., "canal de Riñón") to respect its original etymology related to water streams.
 
 # EXECUTION PIPELINE (In Spanish)
 1. Introducción: Character, Pinyin, core meaning.
@@ -88,6 +89,7 @@ INSTRUCCIONES_FILOSOFIA = """
     <CONSTRAINT>OUTPUT_LANGUAGE == Spanish</CONSTRAINT>
     <CONSTRAINT>TRIPLE_NOMENCLATURE == "STRICT" // FORMATO: [Hanzi] + [Pinyin] + [Traducción al Español]</CONSTRAINT>
     <CONSTRAINT>VERBOSITY == MAXIMUM // Extrema profundidad, sin resumir.</CONSTRAINT>
+    <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA utilices la palabra "meridiano" para referirte a las vías de energía (Jingluo). Debes usar SIEMPRE "canal" o "canales" (ej. "canal de Riñón", "canales y colaterales"), respetando su naturaleza original de cursos de agua y su asociación con el flujo del Qi.</CONSTRAINT>
     <REQUIRE>FULL_TEXT_QUOTATION_PROTOCOL: Cita de forma íntegra usando tu memoria de los clásicos.</REQUIRE>
   </OPERATIONAL_CONSTRAINTS>
 
@@ -142,6 +144,8 @@ INSTRUCCIONES_FILOSOFIA = """
 INSTRUCCIONES_SINTESIS = """
 Eres el Centro que ENTRELAZA los datos de la investigación y ofrece su VISIÓN GLOBAL DE DATOS. Tu trabajo es leer los tres reportes COMPLETOS de los expertos (General, Xu Shen y Qi Po) y generar un mapa mental unificado sobre el ideograma consultado, aportando una visión propia original y creativa. 
 
+REGLA TERMINOLÓGICA ESTRICTA: NUNCA utilices la palabra "meridiano" en tu respuesta para referirte a los Jingluo de acupuntura. Usa siempre los términos "canal" o "canales" (ej. "canal de riñón", "sistema de canales").
+
 Escribe tu respuesta con esta estructura exacta:
 1. El Concepto (La Esencia del Ideograma en una frase)
 2. Evolución y Raíz (Síntesis Etimológica unificada)
@@ -155,13 +159,11 @@ Escribe tu respuesta con esta estructura exacta:
 
 ideograma = st.text_input("1. Escribe el ideograma chino o concepto (ej. 道, 本神):")
 
-# <-- LÍNEA NUEVA: Zona para subir archivos
 foto_subida = st.file_uploader("2. O sube una foto/imagen del ideograma (trazo, dibujo, caligrafía):", type=['jpg', 'png', 'jpeg'])
 
 if st.button("Iniciar Investigación Profunda") and (ideograma or foto_subida):
     with st.status("Analizando datos e imágenes...", expanded=True) as estado:
         
-        # <-- LÍNEAS NUEVAS: Lógica para empaquetar texto + foto juntos
         paquete_entrada = []
         if ideograma:
             paquete_entrada.append(f"Concepto/Texto: {ideograma}")
@@ -175,17 +177,17 @@ if st.button("Iniciar Investigación Profunda") and (ideograma or foto_subida):
         # --- GEMA 1: ETIMOLOGÍA GENERAL ---
         st.write("⏳ Consultando Etimología General...")
         m_general = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_GENERAL)
-        res_general = m_general.generate_content(paquete_entrada).text  # Ahora lee 'paquete_entrada'
+        res_general = m_general.generate_content(paquete_entrada).text  
         
         # --- GEMA 2: XU SHEN ---
         st.write("⏳ Consultando a Xu Shen (Etimología China)...")
         m_china = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_CHINA)
-        res_china = m_china.generate_content(paquete_entrada).text  # Ahora lee 'paquete_entrada'
+        res_china = m_china.generate_content(paquete_entrada).text  
             
         # --- GEMA 3: QI PO ---
         st.write("⏳ Consultando a Qi Po (Yi Jing, DDJ, Neijing)...")
         m_filosofia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_FILOSOFIA)
-        res_filosofia = m_filosofia.generate_content(paquete_entrada).text  # Ahora lee 'paquete_entrada'
+        res_filosofia = m_filosofia.generate_content(paquete_entrada).text  
 
         # --- NÚCLEO SINTETIZADOR ---
         st.write("Interrelacionando los datos de la investigación...")
