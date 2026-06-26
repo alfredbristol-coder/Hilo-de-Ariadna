@@ -5,7 +5,7 @@ import google.generativeai as genai
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
 st.set_page_config(page_title="Etimología y Filosofía China", page_icon="⛩️", layout="centered")
-st.title("⛩️ Estudio de Ideogramas y textos Clásicos")
+st.title("⛩️ Ideogramas y Textos Clásicos")
 st.markdown("Introduce un ideograma para explorar su esencia histórica, médica y filosófica a través de los clásicos.")
 
 # ==========================================
