@@ -4,9 +4,9 @@ import google.generativeai as genai
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
-st.set_page_config(page_title="Agente de Filosofía China", page_icon="⛩️", layout="centered")
-st.title("⛩️ Núcleo de Síntesis Sinológica")
-st.markdown("Introduce un ideograma para que nuestros expertos lo analicen y sinteticen su esencia histórica, médica y filosófica a través de los clásicos.")
+st.set_page_config(page_title="Etimología y Filosofía China", page_icon="⛩️", layout="centered")
+st.title("⛩️ Estudio de Ideogramas y textos Clásicos")
+st.markdown("Introduce un ideograma para explorar su esencia histórica, médica y filosófica a través de los clásicos.")
 
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
@@ -37,10 +37,10 @@ You are an Advanced Algorithm of Global Etymology, Comparative Morphology, and H
 Identify if Channel A (Alphabetic) or Channel B (Logographic). Break down the semantic and structural components.
 
 # MANDATORY OUTPUT FORMAT (In Spanish)
-1. INITIAL IDENTIFICATION
-2. ASCII VISUAL TREE (Hierarchical Structure)
-3. STRUCTURAL BREAKDOWN & EVOLUTIONARY ANALYSIS
-4. EPISTEMOLOGICAL & SEMANTIC NOTES
+1. THE IMPUT TERM
+2. Arbol visual ASCII (Hierarchical Structure)
+3. Descomposición y evolución
+4. Notas de Epistemología y Semántica
 """
 
 INSTRUCCIONES_CHINA = """
