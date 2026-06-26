@@ -10,9 +10,9 @@ st.set_page_config(page_title="Ideogramas y textos Clásicos", page_icon="⛩️
 
 # <-- CÓDIGO ACTUALIZADO: Ideograma gigante arriba, texto estilo Shufa debajo
 st.markdown("""
-    <div style='text-align: center; margin-top: 10px; margin-bottom: 25px;'>
-        <!-- 1. Ideograma principal estilo pincel (Shufa) -->
-        <div style='font-family: "STXingkai", "Xingkai SC", "Kaiti", "STKaiti", "KaiTi_GB2312", serif; font-size: 120px; font-weight: normal; color: #111; letter-spacing: 10px; line-height: 1.1;'>
+    <div style='text-align: center; margin-top: 5px; margin-bottom: 25px;'>
+        <!-- 1. Ideograma principal estilo pincel (Caoshu) -->
+        <div style='font-family: "Caoshu", "Xingkai SC", "Kaiti", "STKaiti", "KaiTi_GB2312", serif; font-size: 120px; font-weight: normal; color: #111; letter-spacing: 10px; line-height: 1.1;'>
             玄永
         </div>
         <!-- 2. Subtítulo justo debajo con tipografía elegante/cursiva -->
