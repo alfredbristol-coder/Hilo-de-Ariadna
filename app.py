@@ -4,9 +4,9 @@ import google.generativeai as genai
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
-st.set_page_config(page_title="Etimología y Filosofía China", page_icon="⛩️", layout="centered")
+st.set_page_config(page_title="Etimología y Filosofía China", page_icon="⛩️字言永", layout="centered")
 st.title("字言永 Ideogramas y Textos Clásicos")
-st.markdown("Indaga su esencia etimológica, médica y filosófica a través de los clásicos.")
+st.markdown("🈸🕉️🆎 Indaga su esencia etimológica, médica y filosófica a través de los clásicos.")
 st.markdown("                                                                  Alfred Bristol")
 
 # ==========================================
