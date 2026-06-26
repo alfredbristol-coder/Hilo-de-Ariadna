@@ -72,7 +72,7 @@ CRITICAL RULE FOR API: Generate the ENTIRE analysis in a single, comprehensive r
 4. Evolución y Fonología: Historical shifts.
 5. Profundidad del Le Grand Ricci: (Acepciones Generales, Filosofía, Taoísmo, Medicina Tradicional China).
 6. Interpretación Taoísta y Humanista.
-7. Bibliografía (APA 7).
+7. Bibliografía.
 """
 
 INSTRUCCIONES_FILOSOFIA = """
@@ -140,13 +140,13 @@ INSTRUCCIONES_FILOSOFIA = """
 """
 
 INSTRUCCIONES_SINTESIS = """
-Eres el Núcleo de Síntesis Sinológica. Tu trabajo es leer los tres reportes COMPLETOS de los expertos (General, Xu Shen y Qi Po) y generar un mapa mental unificado sobre el ideograma consultado. 
+Eres el Centro que ENTRELAZA los datos de la investigación y ofrece su VISIÓN GLOBAL DE DATOS. Tu trabajo es leer los tres reportes COMPLETOS de los expertos (General, Xu Shen y Qi Po) y generar un mapa mental unificado sobre el ideograma consultado, aportando una visión propia original y creativa. 
 
 Escribe tu respuesta con esta estructura exacta:
-1. El Núcleo (La Esencia del Ideograma en una frase)
+1. El Concepto (La Esencia del Ideograma en una frase)
 2. Evolución y Raíz (Síntesis Etimológica unificada)
-3. Elevación Conceptual (Síntesis Filosófica y Médica unificada)
-4. Conexiones del Mapa Mental (3 a 5 conceptos relacionados)
+3. El Sentido y nuestra interpretación (Síntesis Filosófica y Médica unificada)
+4. Conexiones con la Visión Oriental (3 a 5 conceptos relacionados)
 """
 
 # ==========================================
@@ -188,7 +188,7 @@ if st.button("Iniciar Investigación Profunda") and (ideograma or foto_subida):
         res_filosofia = m_filosofia.generate_content(paquete_entrada).text  # Ahora lee 'paquete_entrada'
 
         # --- NÚCLEO SINTETIZADOR ---
-        st.write("🧠 Fusionando datos en el Núcleo Sintetizador...")
+        st.write("Interrelacionando los datos de la investigación...")
         m_sintesis = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_SINTESIS)
         paquete_sintesis = f"Información provista por el usuario:\n{ideograma}\n\nGeneral:\n{res_general}\n\nXu Shen:\n{res_china}\n\nQi Po:\n{res_filosofia}"
         resultado_final = m_sintesis.generate_content(paquete_sintesis).text
@@ -198,7 +198,7 @@ if st.button("Iniciar Investigación Profunda") and (ideograma or foto_subida):
     # ==========================================
     # 5. MOSTRAR RESULTADOS
     # ==========================================
-    st.subheader("SÍNTESIS GLOBAL UNIFICADA")
+    st.subheader("Síntesis Global Unificada")
     st.success(resultado_final)
 
     st.markdown("### Reportes Expandidos de los Maestros")
