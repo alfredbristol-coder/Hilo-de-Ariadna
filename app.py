@@ -1,11 +1,18 @@
 import streamlit as st
 import google.generativeai as genai
+from PIL import Image  # <-- LÍNEA NUEVA: Librería necesaria para leer las fotos subidas
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
 st.set_page_config(page_title="Ideogramas y textos Clásicos", page_icon="⛩️", layout="centered")
 st.title("玄永 XuánYǒng")
+
+# <-- LÍNEAS NUEVAS: Imagen decorativa debajo del título principal
+st.image("https://images.unsplash.com/photo-1508898578281-774ac4893c0c?q=80&w=800", 
+         caption="Estudio paleográfico, exégesis y resonancia médica de los caracteres antiguos", 
+         use_container_width=True)
+
 st.markdown("Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol")
 st.markdown("INTRODUCE UN CONCEPTO, IDEOGRAMA, O UNA PREGUNTA")
 # ==========================================
@@ -24,9 +31,11 @@ MODELO_ESTABLE = 'gemini-2.5-pro'
 # 3. INSTRUCCIONES DE LAS GEMAS (EXPERTOS)
 # ==========================================
 
+# <-- LÍNEA AÑADIDA: "If an image is provided..." para que la IA sepa leer fotos
 INSTRUCCIONES_GENERAL = """
 # ROLE AND PERSONA
 You are an Advanced Algorithm of Global Etymology, Comparative Morphology, and Historical Linguistics. Your primary objective is to deconstruct any given word, ideogram, or term to trace and map its original semantic and phonetic roots, connecting them to human proto-languages.
+If an image is provided, visually analyze the written form or script style.
 
 # CRITICAL PROTOCOLS FOR LINGUISTIC RIGOR
 1. Absolute Epistemological Distinction: Differentiate between "Historically Documented Form" and "Reconstructed Proto-Language".
@@ -43,9 +52,11 @@ Identify if Channel A (Alphabetic) or Channel B (Logographic). Break down the se
 4. Notas de Epistemología y Semántica
 """
 
+# <-- LÍNEA AÑADIDA: "If the user uploads an image/photo..."
 INSTRUCCIONES_CHINA = """
 # ROLE
 You are the Avatar of Xu Shen (许慎) — Master Etymologist from the Eastern Han Dynasty. You are an absolute authority in Paleography, Exegesis, Lexicography, Daoist Philosophy, and TCM.
+If the user uploads an image/photo of a character, analyze its visual strokes, calligraphy style, or layout.
 
 # CORE MISSION
 Educate the user by deconstructing characters using the logic of the *Shuowen Jiezi*, tracing their origins from Small Seal Script, and interpreting their Daoist/TCM meanings.
@@ -136,34 +147,48 @@ Escribe tu respuesta con esta estructura exacta:
 """
 
 # ==========================================
-# 4. INTERFAZ DE USUARIO Y EJECUCIÓN
+# 4. INTERFAZ DE USUARIO Y EJECUCIÓN MULTIMODAL
 # ==========================================
 
-ideograma = st.text_input("Escribe el ideograma chino o concepto (ej. 道, 本神):")
+ideograma = st.text_input("1. Escribe el ideograma chino o concepto (ej. 道, 本神):")
 
-if st.button("Iniciar Investigación Profunda") and ideograma:
-    with st.status(f"Analizando '{ideograma}'...", expanded=True) as estado:
+# <-- LÍNEA NUEVA: Zona para subir archivos
+foto_subida = st.file_uploader("2. O sube una foto/imagen del ideograma (trazo, dibujo, caligrafía):", type=['jpg', 'png', 'jpeg'])
+
+if st.button("Iniciar Investigación Profunda") and (ideograma or foto_subida):
+    with st.status("Analizando datos e imágenes...", expanded=True) as estado:
         
+        # <-- LÍNEAS NUEVAS: Lógica para empaquetar texto + foto juntos
+        paquete_entrada = []
+        if ideograma:
+            paquete_entrada.append(f"Concepto/Texto: {ideograma}")
+        if foto_subida:
+            imagen_pil = Image.open(foto_subida)
+            paquete_entrada.append(imagen_pil)
+            
+        if foto_subida and not ideograma:
+            paquete_entrada.append("Analiza visualmente el ideograma presente en esta imagen.")
+
         # --- GEMA 1: ETIMOLOGÍA GENERAL ---
         st.write("⏳ Consultando Etimología General...")
         m_general = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_GENERAL)
-        res_general = m_general.generate_content(ideograma).text
+        res_general = m_general.generate_content(paquete_entrada).text  # Ahora lee 'paquete_entrada'
         
         # --- GEMA 2: XU SHEN ---
         st.write("⏳ Consultando a Xu Shen (Etimología China)...")
         m_china = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_CHINA)
-        res_china = m_china.generate_content(ideograma).text
+        res_china = m_china.generate_content(paquete_entrada).text  # Ahora lee 'paquete_entrada'
             
         # --- GEMA 3: QI PO ---
         st.write("⏳ Consultando a Qi Po (Yi Jing, DDJ, Neijing)...")
         m_filosofia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_FILOSOFIA)
-        res_filosofia = m_filosofia.generate_content(ideograma).text
+        res_filosofia = m_filosofia.generate_content(paquete_entrada).text  # Ahora lee 'paquete_entrada'
 
         # --- NÚCLEO SINTETIZADOR ---
         st.write("🧠 Fusionando datos en el Núcleo Sintetizador...")
         m_sintesis = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_SINTESIS)
-        paquete = f"Ideograma: {ideograma}\n\nGeneral:\n{res_general}\n\nXu Shen:\n{res_china}\n\nQi Po:\n{res_filosofia}"
-        resultado_final = m_sintesis.generate_content(paquete).text
+        paquete_sintesis = f"Información provista por el usuario:\n{ideograma}\n\nGeneral:\n{res_general}\n\nXu Shen:\n{res_china}\n\nQi Po:\n{res_filosofia}"
+        resultado_final = m_sintesis.generate_content(paquete_sintesis).text
         
         estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
 
