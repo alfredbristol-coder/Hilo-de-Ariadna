@@ -3,27 +3,29 @@ import google.generativeai as genai
 from PIL import Image  # <-- LÍNEA NUEVA: Librería necesaria para leer las fotos subidas
 
 # ==========================================
+# ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
 st.set_page_config(page_title="Ideogramas y textos Clásicos", page_icon="⛩️", layout="centered")
 
-# <-- CÓDIGO NUEVO: Título y Caligrafía Minimalista (Sumi-e digital)
+# <-- CÓDIGO ACTUALIZADO: Ideograma gigante arriba, texto estilo Shufa debajo
 st.markdown("""
-    <div style='text-align: center; margin-top: 20px; margin-bottom: 20px;'>
-        <h1 style='font-family: "Arial", sans-serif; font-size: 30px; color: #333; margin-bottom: 5px;'>玄永 XuánYǒng</h1>
-        <div style='font-family: "Kaiti", "STKaiti", "KaiTi_GB2312", "BiauKai", serif; font-size: 110px; font-weight: normal; color: #1a1a1a; letter-spacing: 20px;'>
+    <div style='text-align: center; margin-top: 30px; margin-bottom: 25px;'>
+        <!-- 1. Ideograma principal estilo pincel (Shufa) -->
+        <div style='font-family: "STXingkai", "Xingkai SC", "Kaiti", "STKaiti", "KaiTi_GB2312", serif; font-size: 120px; font-weight: normal; color: #111; letter-spacing: 10px; line-height: 1.1;'>
             玄永
         </div>
+        <!-- 2. Subtítulo justo debajo con tipografía elegante/cursiva -->
+        <h1 style='font-family: "STXingkai", "Kaiti", "Georgia", serif; font-size: 28px; color: #444; margin-top: 5px; margin-bottom: 15px; font-weight: normal; font-style: italic;'>
+            玄永 XuánYǒng
+        </h1>
     </div>
 """, unsafe_allow_html=True)
 
-st.caption("<div style='text-align: center; font-size: 16px; color: #666;'>Estudio paleográfico, exégesis y resonancia médica de los caracteres antiguos</div>", unsafe_allow_html=True)
+st.caption("<div style='text-align: center; font-size: 16px; color: #666; margin-bottom: 10px;'>Estudio paleográfico, exégesis y resonancia médica de los caracteres antiguos</div>", unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center;'>Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-weight: bold;'>INTRODUCE UN CONCEPTO, IDEOGRAMA, O UNA PREGUNTA</p>", unsafe_allow_html=True)
-
-st.markdown("Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol")
-st.markdown("INTRODUCE UN CONCEPTO, IDEOGRAMA, O UNA PREGUNTA")
+st.markdown("<p style='text-align: center; color: #333;'>Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-weight: bold; margin-top: 25px;'>INTRODUCE UN CONCEPTO, IDEOGRAMA, O UNA PREGUNTA</p>", unsafe_allow_html=True)
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
 # ==========================================
