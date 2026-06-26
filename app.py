@@ -7,7 +7,7 @@ import google.generativeai as genai
 st.set_page_config(page_title="Etimología y Filosofía China", page_icon="⛩️", layout="centered")
 st.title("字言永 Ideogramas y Textos Clásicos")
 st.markdown("Indaga su esencia etimológica, médica y filosófica a través de los clásicos.")
-st.markdown("Alfred Bristol")
+st.markdown("                                                                  Alfred Bristol")
 
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
