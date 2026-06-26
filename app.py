@@ -5,7 +5,7 @@ import google.generativeai as genai
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
 st.set_page_config(page_title="Ideogramas y textos Clásicos", page_icon="⛩️", layout="centered")
-st.title("字言永 Etimología y Filosofía Oriental")
+st.title("字永 ZìYǒng Los hilos del Mistero")
 st.markdown("Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol")
 st.markdown("INTRODUCE UN CONCEPTO, IDEOGRAMA, O UNA PREGUNTA")
 # ==========================================
