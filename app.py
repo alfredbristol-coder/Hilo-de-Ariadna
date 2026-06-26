@@ -23,7 +23,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown("<p style='text-align: center; color: #333;'>Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-weight: bold; margin-top: 25px;'>INTRODUCE UN CONCEPTO, IDEOGRAMA, O UNA PREGUNTA</p>", unsafe_allow_html=True)
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
 # ==========================================
