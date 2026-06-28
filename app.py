@@ -63,23 +63,23 @@ When provided with a character or concept, you MUST execute the following struct
 ## 1. Introducción
 Present the character, its modern Pinyin, and its core, foundational meaning.
 
-## 2. Análisis Estructural y Origen (Xiaozhuan)
+## 2. Origen (Xiaozhuan)
 Deconstruct the character into its functional and pictographic components based on the *Shuowen Jiezi*. Explain the Radical (Bushou) and analyze stroke meanings. Reference its Small Seal Script (Xiaozhuan) roots to bridge ancient pictography to the modern form.
 
-## 3. Método de Formación (Liushu)
+## 3. Formación (Liushu)
 Identify which of the Six Methods applies. Teach the underlying logic clearly so the concept is memorized inherently by the student.
 
 ## 4. Evolución y Fonología
 Provide a direct exposition on the character's origin and phonological shifts over the last 2,500 years (referencing Schuessler and Wieger).
 
-## 5. Profundidad del Le Grand Ricci
+## 5. Le Grand Ricci
 Provide distinct acceptations. You MUST use these exact sub-headers:
 * **Acepciones Generales**
 * **Filosofía**
 * **Taoísmo**
 * **Medicina Tradicional China (MTC)**
 
-## 6. Interpretación Taoísta y Humanista
+## 6. Interpretación
 Synthesize the etymological data into a profound Daoist interpretation. Explain the philosophical worldview and connect it to core humanistic principles and TCM paradigms.
 
 # HARD CONSTRAINTS
@@ -107,7 +107,7 @@ INSTRUCCIONES_FILOSOFIA = """
 
   <OPERATIONAL_CONSTRAINTS>
     <CONSTRAINT>OUTPUT_LANGUAGE == Spanish</CONSTRAINT>
-    <CONSTRAINT>TRIPLE_NOMENCLATURE == "STRICT" // FORMATO: [Texto en Chino/Hanzi] + [Pinyin] + [Traducción al Español]</CONSTRAINT>
+    <CONSTRAINT>TRIPLE_NOMENCLATURE == "STRICT" // FORMATO: [Texto en Chino/Hanzi completo] + [Pinyin] + [Traducción al Español]</CONSTRAINT>
     <CONSTRAINT>VERBOSITY == MAXIMUM // All explanations MUST be extremely detailed and extensive.</CONSTRAINT>
     <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA utilices la palabra "meridiano". Usa SIEMPRE "canal" o "canales". A los puntos de acupuntura debes llamarles SIEMPRE "resonadores". EN LUGAR DE "poder" USA SIEMPRE "FUERZA".</CONSTRAINT>
     <CONSTRAINT>TRANSLATION_SOURCES>
@@ -170,7 +170,7 @@ INSTRUCCIONES_FILOSOFIA = """
         * (Síntesis final extensa).
 
         ---
-        ## VI. Bibliografía y Recursos
+        ## VI. Fuentes
         * (Lista estricta en formato APA 7 de Wilhelm y el Neijing).
     </CONTENT_STRUCTURE_MANDATORY>
   </DELIVERY_PROTOCOL>
@@ -202,12 +202,12 @@ if ideograma:
         res_etimologia = m_etimologia.generate_content(ideograma).text  
             
         # --- GEMA 2: FILOSOFÍA Y MEDICINA (Qi Po) ---
-        st.write("⏳ El Médico Celestial Qí Bó está consultando el oráculo y el Neijing...")
+        st.write("⏳ Fuentes clásicas")
         m_filosofia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_FILOSOFIA)
         res_filosofia = m_filosofia.generate_content(ideograma).text  
 
         # --- NÚCLEO SINTETIZADOR: ABSTRACT ---
-        st.write("✒️ Redactando el Abstract Académico Integrador...")
+        st.write("✒️ Redactando el Resumen...")
         m_abstract = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ABSTRACT)
         paquete_abstract = f"Información consultada:\n{ideograma}\n\nReporte Etimológico:\n{res_etimologia}\n\nTratado de Qi Po:\n{res_filosofia}"
         resultado_final = m_abstract.generate_content(paquete_abstract).text
