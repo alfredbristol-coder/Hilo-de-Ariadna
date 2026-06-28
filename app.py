@@ -28,7 +28,7 @@ except:
     st.error("🚨 La API Key no está configurada en los secretos del servidor de Streamlit.")
     st.stop()
 
-MODELO_ESTABLE = 'gemini-1.5-pro-latest'
+MODELO_ESTABLE = 'gemini-1.5-flash'
 
 # ==========================================
 # 3. INSTRUCCIONES DE LAS GEMAS (EXPERTOS)
