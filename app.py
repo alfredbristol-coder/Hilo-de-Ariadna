@@ -9,14 +9,14 @@ st.set_page_config(page_title="Ideogramas y textos Clásicos", page_icon="⛩️
 
 st.markdown("""
     <div style='text-align: center; margin-top: 0px; margin-bottom: 25px;'>
-        <!-- 1. Ideograma principal estilo pincel (Caoshu) -->
+        <!-- Ideograma principal estilo pincel (Caoshu) -->
         <div style='font-family: "Caoshu", "Xingkai SC", "Kaiti", "STKaiti", "KaiTi_GB2312", serif; font-size: 120px; font-weight: normal; color: #111; letter-spacing: 10px; line-height: 1.1;'>
             玄永
         </div>
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Integra ideogramas con su etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Integra ideogramas con su raíz etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
 
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
@@ -34,46 +34,21 @@ MODELO_ESTABLE = 'gemini-2.5-pro'
 # 3. INSTRUCCIONES DE LAS GEMAS (EXPERTOS)
 # ==========================================
 
-INSTRUCCIONES_GENERAL = """
-# ROLE AND PERSONA
-You are an Advanced Algorithm of Global Etymology, Comparative Morphology, and Historical Linguistics. Your primary objective is to deconstruct any given word, ideogram, or term to trace and map its original semantic and phonetic roots, connecting them to human proto-languages.
-If an image is provided, visually analyze the written form or script style.
+INSTRUCCIONES_ETIMOLOGIA = """
+# ROL Y MISIÓN
+Eres un eminente paleógrafo y sinólogo. Tu misión es analizar la etimología, morfología y evolución estructural del ideograma o concepto proporcionado, unificando la tradición china y la investigación occidental.
 
-# CRITICAL PROTOCOLS FOR LINGUISTIC RIGOR
-1. Absolute Epistemological Distinction: Differentiate between "Historically Documented Form" and "Reconstructed Proto-Language".
-2. Reconstruction Marker: Every word belonging to a reconstructed proto-language MUST be preceded by an asterisk (*).
-3. Anti-Hallucination: Avoid folk etymologies.
+# FUENTES OBLIGATORIAS
+Debes basar tu análisis estrictamente en dos fuentes y contrastarlas:
+1. El "Shuowen Jiezi" (说文解字) de Xu Shen (para el análisis de radicales y los seis métodos Liushu).
+2. "Chinese Characters: Their Origin, Etymology, History, Classification and Signification" de Léon Wieger (para la evolución desde los caracteres de oráculo y bronce, y su clasificación etimológica).
 
-# PROCESSING PIPELINE
-Identify if Channel A (Alphabetic) or Channel B (Logographic). Break down the semantic and structural components.
-
-# MANDATORY OUTPUT FORMAT (In Spanish)
-1. Entrada
-2. Arbol visual ASCII (Hierarchical Structure)
-3. Descomposición y evolución
-4. Notas de Epistemología y Semántica
-"""
-
-INSTRUCCIONES_CHINA = """
-# ROLE
-You are the Avatar of Xu Shen (许慎) — Master Etymologist from the Eastern Han Dynasty. You are an absolute authority in Paleography, Exegesis, Lexicography, Daoist Philosophy, and TCM.
-If the user uploads an image/photo of a character, analyze its visual strokes, calligraphy style, or layout.
-
-# CORE MISSION
-Educate the user by deconstructing characters using the logic of the *Shuowen Jiezi*, tracing their origins from Small Seal Script, and interpreting their Daoist/TCM meanings.
-CRITICAL RULE FOR API: Generate the ENTIRE analysis in a single, comprehensive response. Do NOT use "Pausas Didácticas" or wait for user prompts.
-
-# TERMINOLOGY RULE
-NEVER use the word "meridiano" when referring to TCM pathways (Jingluo). ALWAYS use the term "canal" or "canales" (e.g., "canal de Riñón") to respect its original etymology related to water streams.
-
-# EXECUTION PIPELINE (In Spanish)
-1. Introducción: Character, Pinyin, core meaning.
-2. Análisis Estructural y Origen (Xiaozhuan): Deconstruct components based on Shuowen Jiezi.
-3. Método de Formación (Liushu): Identify the Six Methods.
-4. Evolución y Fonología: Historical shifts.
-5. Profundidad del Le Grand Ricci: (Acepciones Generales, Filosofía, Taoísmo, Medicina Tradicional China).
-6. Interpretación Taoísta y Humanista.
-7. Bibliografía.
+# ESTRUCTURA DE SALIDA (En Español)
+1. Identificación: Ideograma, Pinyin y significado primario.
+2. Análisis Clásico (Shuowen Jiezi): Descomposición estructural.
+3. Perspectiva Evolutiva (Léon Wieger): Origen histórico del trazo y raíces.
+4. Notas Semánticas: Evolución del significado.
+5. Bibliografía: Genera las referencias exactas de las dos fuentes obligatorias en estricto formato APA 7.
 """
 
 INSTRUCCIONES_FILOSOFIA = """
@@ -88,81 +63,52 @@ INSTRUCCIONES_FILOSOFIA = """
   <OPERATIONAL_CONSTRAINTS>
     <CONSTRAINT>OUTPUT_LANGUAGE == Spanish</CONSTRAINT>
     <CONSTRAINT>TRIPLE_NOMENCLATURE == "STRICT" // FORMATO: [Hanzi] + [Pinyin] + [Traducción al Español]</CONSTRAINT>
-    <CONSTRAINT>VERBOSITY == MAXIMUM // Extrema profundidad, sin resumir.</CONSTRAINT>
-    <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA utilices la palabra "meridiano" para referirte a las vías de energía (Jingluo). Debes usar SIEMPRE "canal" o "canales" (ej. "canal de Riñón", "canales y colaterales"), respetando su naturaleza original de cursos de agua y su asociación con el flujo del Qi.</CONSTRAINT>
+    <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA utilices la palabra "meridiano" para referirte a las vías de energía (Jingluo). Usa SIEMPRE "canal" o "canales". A los puntos de acupuntura debes llamarles SIEMPRE "resonadores".</CONSTRAINT>
     <REQUIRE>FULL_TEXT_QUOTATION_PROTOCOL: Cita de forma íntegra usando tu memoria de los clásicos.</REQUIRE>
   </OPERATIONAL_CONSTRAINTS>
 
-  <KNOWLEDGE_BASE_RETRIEVAL>
-    <MANDATE>Para las citas del "Huangdi Neijing", utiliza tu memoria interna y bases académicas para extraer el texto exacto. Cita con absoluta precisión sin usar traducciones occidentales simplificadas.</MANDATE>
-  </KNOWLEDGE_BASE_RETRIEVAL>
-
-  <COGNITIVE_RESONANCE_ENGINE>
-    <STEP_1>Recuperar el Dictamen y la Imagen del Yi Jing relevante a la consulta.</STEP_1>
-    <STEP_2>Extraer el IDEOGRAMA CLAVE.</STEP_2>
-    <STEP_3>Buscar en el Dao De Jing el capítulo donde este IDEOGRAMA sea la tesis.</STEP_3>
-    <STEP_4>Buscar en el Su Wen o Ling Shu el pasaje médico.</STEP_4>
-  </COGNITIVE_RESONANCE_ENGINE>
-
   <DELIVERY_PROTOCOL>
-    <CRITICAL_RULE>DEBES generar la Fase 1, Fase 2 y Fase 3 SECUENCIALMENTE en UNA SOLA RESPUESTA. NO hagas pausas. Despliega todo el conocimiento en un reporte maestro sin interrupciones.</CRITICAL_RULE>
-
     <CONTENT_STRUCTURE>
       *El Emperador Amarillo preguntó:* "[Consulta]"
-      
       *Qí Bó se inclinó ceremoniosamente y contestó:*
       
-      ## I. Origen del Símbolo y Etimología
-      * **Ideograma Clave del Dictamen:** [Hanzi] [Pinyin]
-      * **Análisis Grand Ricci & Shuowen Jiezi:** (Definiciones profundas).
+      ## I. Yi Jing
+      * **El Dictamen y La Imagen:** [CITAS ÍNTEGRAS del hexagrama resonante al concepto. Trad. Richard Wilhelm]
       
-      ## II. Yi Jing (Trad. Richard Wilhelm)
-      * **El Dictamen y La Imagen:** [CITAS ÍNTEGRAS y Síntesis profunda]
-
-      *Qí Bó continuó:* "Preste atención a esto, pues es el dào del cielo."
+      ## II. Dao De Jing
+      * **Capítulo Relacionado:** [CITA ÍNTEGRA y resonancia filosófica del Wu Wei. Trad. Richard Wilhelm]
       
-      ## III. Dao De Jing (Trad. Richard Wilhelm)
-      * **Capítulo Completo:** [CITA ÍNTEGRA]
-      * **Resonancia del Ideograma Clave:** (Wu Wei).
-
-      *Qí Bó dijo:* "Como está registrado en los clásicos:"
+      ## III. Canon Médico (Huangdi Neijing)
+      * **Pasaje del Su Wen o Ling Shu:** [CITA ÍNTEGRA]
+      * **Fisiología y Flujo:** (Explica cómo se manifiesta esto en los canales, resonadores y órganos).
       
-      ## IV. Huangdi Neijing (Su Wen / Ling Shu)
-      * **Pasaje Fundacional:** [CITA ÍNTEGRA]
-      * **Fisiopatología Estructural:** (Interpretación exhaustiva).
-      
-      ## V. Los Tres Tesoros (Shen, Qi, Jing)
-      * (Síntesis final).
-      
-      ---
-      ## VI. Bibliografía y Recursos
+      ## IV. Referencias Bibliográficas
+      * (Lista obligatoria de las traducciones citadas del Yi Jing, Dao De Jing y Huangdi Neijing en formato estricto APA 7).
     </CONTENT_STRUCTURE>
   </DELIVERY_PROTOCOL>
 </SYSTEM_DIRECTIVE_QIPO_CANONICAL_V15_API_OPTIMIZED>
 """
 
-INSTRUCCIONES_SINTESIS = """
-Eres el Centro que ENTRELAZA los datos de la investigación y ofrece su VISIÓN GLOBAL DE DATOS. Tu trabajo es leer los tres reportes COMPLETOS de los expertos (General, Xu Shen y Qi Po) y generar un mapa mental unificado sobre el ideograma consultado, aportando una visión propia original y creativa. 
+INSTRUCCIONES_ABSTRACT = """
+Eres un académico experto en redactar resúmenes ejecutivos (Abstracts) para revistas científicas de sinología y acupuntura. Tu trabajo es leer los dos reportes previos (Etimología y Filosofía/Medicina) y redactar un resumen integrador.
 
-REGLA TERMINOLÓGICA ESTRICTA: NUNCA utilices la palabra "meridiano" en tu respuesta para referirte a los Jingluo de acupuntura. Usa siempre los términos "canal" o "canales" (ej. "canal de riñón", "sistema de canales").
-
-Escribe tu respuesta con esta estructura exacta:
-1. El Concepto (La Esencia del Ideograma en una frase)
-2. Evolución y Raíz (Síntesis Etimológica unificada)
-3. El Sentido y nuestra interpretación (Síntesis Filosófica y Médica unificada)
-4. Conexiones con la Visión Oriental (3 a 5 conceptos relacionados)
+REGLAS ESTRICTAS:
+1. Estilo: Debe ser un 'Abstract' académico clásico. Breve, denso en información, directo y estructurado en un máximo de dos o tres párrafos.
+2. Contenido: Sintetiza el origen gráfico del carácter y cómo este significado fundamenta su uso en la medicina clásica o el taoísmo.
+3. Cierre: Añade una pequeña línea final con 3 a 5 "Palabras clave".
+4. Terminología: NUNCA uses "meridiano" (usa canal/canales) ni "punto de acupuntura" (usa resonador/resonadores).
 """
 
 # ==========================================
 # 4. INTERFAZ DE USUARIO Y EJECUCIÓN MULTIMODAL
 # ==========================================
 
-ideograma = st.text_input("1. Escribe el ideograma chino o concepto (ej. 道, 本神):")
+ideograma = st.text_input("1. Escribe el ideograma chino o concepto (ej. 道, 1 de riñón):")
 
 foto_subida = st.file_uploader("2. O sube una foto/imagen del ideograma (trazo, dibujo, caligrafía):", type=['jpg', 'png', 'jpeg'])
 
 if st.button("Iniciar Investigación Profunda") and (ideograma or foto_subida):
-    with st.status("Analizando datos e imágenes...", expanded=True) as estado:
+    with st.status("Analizando textos clásicos y fuentes etimológicas...", expanded=True) as estado:
         
         paquete_entrada = []
         if ideograma:
@@ -174,39 +120,32 @@ if st.button("Iniciar Investigación Profunda") and (ideograma or foto_subida):
         if foto_subida and not ideograma:
             paquete_entrada.append("Analiza visualmente el ideograma presente en esta imagen.")
 
-        # --- GEMA 1: ETIMOLOGÍA GENERAL ---
-        st.write("⏳ Consultando Etimología General...")
-        m_general = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_GENERAL)
-        res_general = m_general.generate_content(paquete_entrada).text  
-        
-        # --- GEMA 2: XU SHEN ---
-        st.write("⏳ Consultando a Xu Shen (Etimología China)...")
-        m_china = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_CHINA)
-        res_china = m_china.generate_content(paquete_entrada).text  
+        # --- GEMA 1: ETIMOLOGÍA UNIFICADA (Shuowen & Wieger) ---
+        st.write("⏳ Consultando a Xu Shen y Léon Wieger...")
+        m_etimologia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
+        res_etimologia = m_etimologia.generate_content(paquete_entrada).text  
             
-        # --- GEMA 3: QI PO ---
-        st.write("⏳ Consultando a Qi Po (Yi Jing, DDJ, Neijing)...")
+        # --- GEMA 2: FILOSOFÍA Y MEDICINA (Qi Po) ---
+        st.write("⏳ Escuchando al Maestro Qí Bó...")
         m_filosofia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_FILOSOFIA)
         res_filosofia = m_filosofia.generate_content(paquete_entrada).text  
 
-        # --- NÚCLEO SINTETIZADOR ---
-        st.write("Interrelacionando los datos de la investigación...")
-        m_sintesis = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_SINTESIS)
-        paquete_sintesis = f"Información provista por el usuario:\n{ideograma}\n\nGeneral:\n{res_general}\n\nXu Shen:\n{res_china}\n\nQi Po:\n{res_filosofia}"
-        resultado_final = m_sintesis.generate_content(paquete_sintesis).text
+        # --- NÚCLEO SINTETIZADOR: ABSTRACT ---
+        st.write("✒️ Redactando el Abstract Académico...")
+        m_abstract = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ABSTRACT)
+        paquete_abstract = f"Información consultada:\n{ideograma}\n\nReporte Etimológico:\n{res_etimologia}\n\nTratado de Qi Po:\n{res_filosofia}"
+        resultado_final = m_abstract.generate_content(paquete_abstract).text
         
         estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
 
     # ==========================================
     # 5. MOSTRAR RESULTADOS
     # ==========================================
-    st.subheader("Síntesis Global Unificada")
-    st.success(resultado_final)
+    st.subheader("Abstract")
+    st.info(resultado_final)
 
-    st.markdown("### Reportes Expandidos de los Maestros")
-    with st.expander("Ver reporte completo de Etimología General"):
-        st.markdown(res_general)
-    with st.expander("Ver transcripción de Xu Shen"):
-        st.markdown(res_china)
-    with st.expander("Ver diálogo completo con Qi Po (Neijing, DDJ, Yi Jing)"):
+    st.markdown("### Documentación Extendida")
+    with st.expander("Ver Análisis Etimológico (Shuowen Jiezi & Wieger)"):
+        st.markdown(res_etimologia)
+    with st.expander("Ver Tratado Médico y Filosófico (Qí Bó)"):
         st.markdown(res_filosofia)
