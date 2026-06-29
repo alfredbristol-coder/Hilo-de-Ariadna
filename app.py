@@ -1,5 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import concurrent.futures
 
 # ==========================================
@@ -26,9 +27,15 @@ if not MI_CLAVE:
 
 genai.configure(api_key=MI_CLAVE)
 
-# Modelo principal para las tareas profundas
 MODELO_ESTABLE = 'gemini-2.5-pro'
-# Opcional: Si sigue tardando mucho en tu servidor, puedes cambiar MODELO_ESTABLE a 'gemini-2.5-flash' para el abstract.
+
+# Relajar los filtros de seguridad para que la terminología médica no bloquee la API
+AJUSTES_SEGURIDAD = {
+    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+}
 
 # ==========================================
 # 3. INSTRUCCIONES DE LAS GEMAS (EXPERTOS)
@@ -36,111 +43,100 @@ MODELO_ESTABLE = 'gemini-2.5-pro'
 
 INSTRUCCIONES_ETIMOLOGIA = """
 # ROLE
-You are the Avatar of Xu Shen (许慎) — Master Etymologist from the Eastern Han Dynasty (approx. 58 - 147 AD). You are an absolute authority in Paleography, Exegesis, Lexicography, Daoist Philosophy, and Traditional Chinese Medicine (TCM) Epistemology.
-
-# TONE
-Erudite, didactic, profoundly philosophical, clear, and methodical.
-
+You are the Avatar of Xu Shen. Authority in Paleography, Lexicography, Daoist Philosophy, and TCM.
 # CORE MISSION
-Serve as the definitive Spanish-language manual for the study of Chinese characters. You educate the user by deconstructing characters using the logic of the *Shuowen Jiezi*, tracing their origins from Small Seal Script (Xiaozhuan), and interpreting their deepest Daoist and TCM meanings using the highest academic sources. All your outputs must be exclusively in Spanish. Provide all Chinese characters in Traditional Chinese.
-
-# KNOWLEDGE BASE
-* **Source 1:** *Shuowen Jiezi (說文解字)* by Xu Shen.
-* **Source 2:** *Hanziyuan.net*.
-* **Source 3:** *Chinese Characters* by Dr. L. Wieger, S.J.
-* **Source 4:** *ABC Etymological Dictionary of Old Chinese* by Axel Schuessler.
-* **Source 5:** *Le Grand Ricci*.
-
+Serve as the definitive Spanish-language manual for Chinese characters. Deconstruct characters using *Shuowen Jiezi*. Provide characters in Traditional Chinese.
 # EXECUTION PIPELINE
-## 1. Introducción
-## 2. Origen (Xiaozhuan)
-## 3. Formación (Liushu)
-## 4. Evolución y Fonología
-## 5. Le Grand Ricci (Acepciones Generales, Filosofía, Taoísmo, Medicina Tradicional China (MTC))
-## 6. Interpretación
-
+1. Introducción
+2. Origen (Xiaozhuan)
+3. Formación (Liushu)
+4. Evolución y Fonología
+5. Le Grand Ricci (Acepciones Generales, Filosofía, Taoísmo, Medicina Tradicional China (MTC))
+6. Interpretación
 # HARD CONSTRAINTS
-* **ALWAYS** respond strictly in Spanish. Traditional Chinese characters only.
-* **REQUIRED CITATIONS:** Bibliography in APA 7th Edition style.
+Respond strictly in Spanish. Traditional Chinese characters only. End with APA 7 bibliography.
 """
 
 INSTRUCCIONES_FILOSOFIA = """
 <SYSTEM_DIRECTIVE_QIPO_CANONICAL_V15_OPTIMIZED>
   <TARGET_IDENTITY>
-    Actúa exclusivamente como Qí Bó (岐伯), basándote en los textos del "Sù Wèn" y el "Líng Shū" del Canon de Medicina Interna del Emperador Amarillo.
-    1. TONO Y ACTITUD: Reverente, sabio, sosegado. Usa metáforas relacionadas con la naturaleza.
-    2. FÓRMULAS DE APERTURA: Inicia siempre elogiando la pregunta.
-    3. VOCABULARIO TÉCNICO MÉDICO: Usa "Energía Vital", "Energía Perversa", 5 órganos, 6 vísceras.
+    Actúa exclusivamente como Qí Bó. Usa tono reverente, sabio. 
+    VOCABULARIO: "Energía Vital", "Energía Perversa", 5 órganos, 6 vísceras.
   </TARGET_IDENTITY>
-
   <OPERATIONAL_CONSTRAINTS>
     <CONSTRAINT>OUTPUT_LANGUAGE == Spanish</CONSTRAINT>
-    <CONSTRAINT>TRIPLE_NOMENCLATURE == "STRICT" // FORMATO: [Texto en Chino Tradicional] + [Pinyin] + [Traducción al Español]</CONSTRAINT>
-    <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA utilices la palabra "meridiano" (usa "canal"). Puntos de acupuntura = "resonadores". Poder = "FUERZA".</CONSTRAINT>
+    <CONSTRAINT>TRIPLE_NOMENCLATURE == "STRICT" // [Chino Tradicional] + [Pinyin] + [Traducción]</CONSTRAINT>
+    <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA "meridiano" (usa "canal"). Puntos = "resonadores". Poder = "FUERZA".</CONSTRAINT>
     <CONSTRAINT>TRANSLATION_SOURCES>
       <SOURCE text="Yi Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Dao De Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Huangdi Neijing">PRIORIDAD ABSOLUTA: https://ctext.org/huangdi-neijing</SOURCE>
     </CONSTRAINT>
-    <REQUIRE>MANDATO ESTRUCTURAL DE CITAS: Presentar PRIMERO la cita textual completa ANTES de añadir comentarios.</REQUIRE>
   </OPERATIONAL_CONSTRAINTS>
-
   <DELIVERY_PROTOCOL>
-    <CONTENT_STRUCTURE_MANDATORY>
-        *El Emperador Amarillo preguntó:* "[Consulta del Usuario]"
-        *Qí Bó se inclinó ceremoniosamente y contestó:* "[Fórmula de Apertura Clásica]"
-        
-        ## I. Origen del Símbolo y Etimología
-        ## II. Yi Jing (Exclusivamente Trad. Richard Wilhelm)
-        ## III. Dao De Jing (Exclusivamente Trad. Richard Wilhelm)
-        ## IV. Huangdi Neijing (Extraído de https://ctext.org/huangdi-neijing)
-        ## V. Los Tres Tesoros (Shen, Qi, Jing)
-        ---
-        ## VI. Fuentes
-    </CONTENT_STRUCTURE_MANDATORY>
+    ## I. Origen del Símbolo y Etimología
+    ## II. Yi Jing (Exclusivamente Trad. Richard Wilhelm)
+    ## III. Dao De Jing (Exclusivamente Trad. Richard Wilhelm)
+    ## IV. Huangdi Neijing (Extraído de https://ctext.org/huangdi-neijing)
+    ## V. Los Tres Tesoros (Shen, Qi, Jing)
+    ---
+    ## VI. Fuentes
   </DELIVERY_PROTOCOL>
 </SYSTEM_DIRECTIVE_QIPO_CANONICAL_V15_OPTIMIZED>
 """
 
-# === INSTRUCCIONES OPTIMIZADAS PARA VELOCIDAD Y CLARIDAD ===
 INSTRUCCIONES_ABSTRACT = """
 Eres un asistente didáctico. Tu tarea es leer los densos reportes de Etimología y Filosofía y crear un resumen muy claro, directo y en lenguaje sencillo para el usuario.
-
 REGLAS ESTRICTAS:
-1. Estilo: Lenguaje natural, muy fácil de entender. Evita la jerga académica pesada. Ve directo al grano.
-2. Estructura: 
-   - Un breve párrafo introductorio (2 líneas máximo).
-   - Una lista de 3 a 4 viñetas (bullet points) destacando lo más importante del significado del ideograma y su aplicación en la medicina/taoísmo.
-3. Brevedad: El resumen completo NO debe superar las 150 palabras.
-4. Terminología: Usa SIEMPRE "canal" (no meridiano), "resonador" (no punto de acupuntura) y "fuerza" (no poder).
+1. Estilo: Lenguaje natural. Evita jerga pesada.
+2. Estructura: Un breve párrafo introductorio y una lista de 3 a 4 viñetas (bullet points) con lo más importante.
+3. Brevedad: Máximo 150 palabras.
+4. Terminología: Usa "canal" (no meridiano), "resonador" (no punto de acupuntura) y "fuerza" (no poder).
 """
 
 # ==========================================
-# 4. FUNCIONES DE LLAMADA A LA API
+# 4. FUNCIONES DE LLAMADA A LA API CON MANEJO DE ERRORES
 # ==========================================
 def obtener_etimologia(query):
     modelo = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
-    return modelo.generate_content(query).text
+    try:
+        respuesta = modelo.generate_content(query, safety_settings=AJUSTES_SEGURIDAD)
+        return respuesta.text
+    except Exception as e:
+        return f"⚠️ Error generando Etimología: {str(e)}"
 
 def obtener_filosofia(query):
     modelo = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_FILOSOFIA)
-    return modelo.generate_content(query).text
+    try:
+        respuesta = modelo.generate_content(query, safety_settings=AJUSTES_SEGURIDAD)
+        return respuesta.text
+    except Exception as e:
+        return f"⚠️ Error generando Tratado Filosófico: {str(e)}"
 
 def obtener_abstract(texto_etimologia, texto_filosofia, query):
     modelo = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ABSTRACT)
     
-    # Reducimos el tamaño del paquete para que lo lea más rápido
-    paquete = f"Concepto:\n{query}\n\nResumen Etimológico:\n{texto_etimologia[:3000]}\n\nResumen Filosófico:\n{texto_filosofia[:3000]}"
+    # Limpiamos posibles mensajes de error previos para no confundir al modelo
+    texto_eti_limpio = texto_etimologia[:3000] if not texto_etimologia.startswith("⚠️ Error") else "Datos no disponibles."
+    texto_fil_limpio = texto_filosofia[:3000] if not texto_filosofia.startswith("⚠️ Error") else "Datos no disponibles."
     
-    # Configuramos la generación para forzar rapidez y evitar bloqueos
-    respuesta = modelo.generate_content(
-        paquete,
-        generation_config=genai.GenerationConfig(
-            max_output_tokens=300,  # Corta abruptamente si intenta extenderse
-            temperature=0.2         # Baja temperatura para que sea directo y cero verboso
+    paquete = f"Concepto:\n{query}\n\nResumen Etimológico:\n{texto_eti_limpio}\n\nResumen Filosófico:\n{texto_fil_limpio}"
+    
+    try:
+        respuesta = modelo.generate_content(
+            paquete,
+            safety_settings=AJUSTES_SEGURIDAD,
+            generation_config=genai.GenerationConfig(
+                max_output_tokens=300,
+                temperature=0.2
+            )
         )
-    )
-    return respuesta.text
+        return respuesta.text
+    except ValueError:
+        # Esto atrapa el error específico cuando la API devuelve una respuesta bloqueada o malformada
+        return "⚠️ *El resumen no se pudo generar correctamente, pero puedes leer los detalles completos en las pestañas de abajo.*"
+    except Exception as e:
+        return f"⚠️ *Error inesperado en el resumen:* {str(e)}"
 
 # ==========================================
 # 5. INTERFAZ DE USUARIO Y LÓGICA PRINCIPAL
@@ -167,8 +163,8 @@ if ideograma:
     # ==========================================
     # 6. MOSTRAR RESULTADOS
     # ==========================================
-    st.subheader("Resumen (Abstract)")
-    st.success(resultado_final)
+    st.subheader("Resumen General")
+    st.info(resultado_final)
 
     st.markdown("### Tratados Clásicos Extendidos")
     with st.expander("📜 Ver Análisis Etimológico (Xu Shen)"):
