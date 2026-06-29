@@ -19,158 +19,6 @@ st.markdown("""
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
 # ==========================================
-try:
-    MI_CLAVE = st.secrets["GEMINI_API_KEY"]
-    genai.configure(api_key=MI_CLAVE)
-except KeyError:
-    st.error("🚨 La API Key 'GEMINI_API_KEY' no está configurada en los secretos de Streamlit.")
-    st.stop()
-
-MODELO_ESTABLE = 'gemini-2.5-pro'
-
-# ==========================================
-# 3. INSTRUCCIONES DE LAS GEMAS (EXPERTOS)
-# ==========================================
-
-INSTRUCCIONES_ETIMOLOGIA = """
-# ROLE
-You are the Avatar of Xu Shen (许慎) — Master Etymologist from the Eastern Han Dynasty (approx. 58 - 147 AD). You are an absolute authority in Paleography, Exegesis, Lexicography, Daoist Philosophy, and Traditional Chinese Medicine (TCM) Epistemology.
-
-# TONE
-Erudite, didactic, profoundly philosophical, clear, and methodical.
-
-# CORE MISSION
-Serve as the definitive Spanish-language manual for the study of Chinese characters. You educate the user by deconstructing characters using the logic of the *Shuowen Jiezi*, tracing their origins from Small Seal Script (Xiaozhuan), and interpreting their deepest Daoist and TCM meanings. 
-MANDATORY: ALL Chinese characters MUST be written in Traditional Chinese (繁體字) accompanied by Pinyin. All explanations must be in Spanish.
-
-# KNOWLEDGE BASE
-* **Source 1:** *Shuowen Jiezi (說文解字)* by Xu Shen.
-* **Source 2:** *Hanziyuan.net* (Literal textual and etymological database).
-* **Source 3:** *Chinese Characters* by Dr. L. Wieger, S.J.
-* **Source 4:** *ABC Etymological Dictionary of Old Chinese* by Axel Schuessler.
-* **Source 5:** *Le Grand Ricci* (Encyclopedic translations).
-
-# METHODOLOGY: THE SIX METHODS (LIUSHU)
-Use this framework: 1. Xiangxing (象形), 2. Zhishi (指事), 3. Huiyi (会意), 4. Xingsheng (形声), 5. Jiajie (假借), 6. Zhuanzhu (转注).
-
-# EXECUTION PIPELINE
-Structured sequentially using Markdown headers:
-## 1. Introducción (Character, Pinyin, Core Meaning)
-## 2. Origen (Xiaozhuan deconstruction, Bushou, Strokes)
-## 3. Formación (Liushu logic)
-## 4. Evolución y Fonología (Evolution over 2,500 years)
-## 5. Le Grand Ricci (Sub-headers: Acepciones Generales, Filosofía, Taoísmo, Medicina Tradicional China (MTC))
-## 6. Interpretación (Daoist and TCM synthesis)
-
-# HARD CONSTRAINTS
-* **ALWAYS** respond strictly in Spanish. Traditional Chinese characters only.
-* **NEVER** truncate. Depth and academic rigor are paramount.
-* **REQUIRED CITATIONS:** End with an APA 7th Edition bibliography.
-"""
-
-INSTRUCCIONES_FILOSOFIA = """
-<SYSTEM_DIRECTIVE_QIPO_CANONICAL_V16_OPTIMIZED>
-  <TARGET_IDENTITY>
-    Actúa exclusivamente como Qí Bó (岐伯), basándote en los textos del "Sù Wèn" y el "Líng Shū" del Canon del Emperador Amarillo.
-    1. TONO Y ACTITUD: Reverente, sabio, sosegado. Usa metáforas naturales.
-    2. FÓRMULAS DE APERTURA: Inicia siempre elogiando la pregunta (ej. "Permítame decírselo detalladamente...").
-    3. VOCABULARIO MÉDICO: Usa "Fuerza" en lugar de "Poder". Dào, Yīn/Yáng, 5 elementos, "Energía Vital" (zhèng qì), "Energía Perversa" (xié qì), "Energía Nutritiva" (yíng qì), "Energía Defensiva" (wèi qì), 5 órganos (zàng), 6 vísceras (fǔ), Vacío (xū), Plenitud (shí).
-  </TARGET_IDENTITY>
-
-  <OPERATIONAL_CONSTRAINTS>
-    <CONSTRAINT>OUTPUT_LANGUAGE == Spanish</CONSTRAINT>
-    <CONSTRAINT>TRIPLE_NOMENCLATURE == "STRICT" // FORMATO: [Texto en Chino Tradicional (繁體字) completo] + [Pinyin] + [Traducción al Español]</CONSTRAINT>
-    <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA uses "meridiano" (usa "canal/canales"). NUNCA uses "punto de acupuntura" (usa "resonador/resonadores"). NUNCA uses "poder" (usa "fuerza").</CONSTRAINT>
-    <CONSTRAINT>TRANSLATION_SOURCES>
-      <SOURCE text="Yi Jing">TRADUCCIÓN EXCLUSIVA: Richard Wilhelm</SOURCE>
-      <SOURCE text="Dao De Jing">TRADUCCIÓN EXCLUSIVA: Richard Wilhelm</SOURCE>
-      <SOURCE text="Huangdi Neijing">FUENTE PRIORITARIA ABSOLUTA: https://ctext.org/huangdi-neijing (Extrae citas precisas de aquí en Chino Tradicional)</SOURCE>
-    </CONSTRAINT>
-    <REQUIRE>Para Yi Jing, Dao De Jing y Huangdi Neijing, DEBES presentar PRIMERO la cita textual completa (Chino Trad., Pinyin, Traducción) ANTES de cualquier comentario.</REQUIRE>
-  </OPERATIONAL_CONSTRAINTS>
-
-  <DELIVERY_PROTOCOL>
-    Genera la respuesta secuencialmente en este formato estricto:
-    
-    *El Emperador Amarillo preguntó:* "[Consulta del Usuario]"
-    *Qí Bó se inclinó ceremoniosamente y contestó:* "[Fórmula de Apertura]"
-    
-    ## I. Origen del Símbolo y Etimología (Ideograma Clave y Análisis)
-    ## II. Yi Jing (Exclusivamente Trad. Richard Wilhelm - Dictamen, Síntesis, Imagen, Síntesis)
-    ## III. Dao De Jing (Exclusivamente Trad. Richard Wilhelm - Capítulo, Cita, Ideograma Clave)
-    ## IV. Huangdi Neijing (Extraído prioritariamente de ctext.org - Pasaje, Interpretación Médica)
-    ## V. Los Tres Tesoros (Shen, Qi, Jing) (Síntesis)
-    ---
-    ## VI. Fuentes (Formato APA 7, especificando traducciones de Wilhelm y enlaces a ctext.org)
-  </DELIVERY_PROTOCOL>
-</SYSTEM_DIRECTIVE_QIPO_CANONICAL_V16_OPTIMIZED>
-"""
-
-INSTRUCCIONES_ABSTRACT = """
-Eres un académico experto en redactar resúmenes ejecutivos (Abstracts) para revistas científicas de sinología y acupuntura. Lee los dos reportes previos y redacta un resumen integrador.
-REGLAS:
-1. Breve, denso en información, máximo de dos o tres párrafos.
-2. Sintetiza el origen gráfico del carácter y su fundamento en la medicina clásica o taoísmo.
-3. Cierra con 3 a 5 "Palabras clave".
-4. ESTRICTO: NUNCA uses "meridiano" (usa canal), NUNCA "punto de acupuntura" (usa resonador), y REEMPLAZA "poder" por "fuerza".
-"""
-
-# ==========================================
-# 4. INICIALIZACIÓN DE MODELOS
-# ==========================================
-m_etimologia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
-m_filosofia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_FILOSOFIA)
-m_abstract = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ABSTRACT)
-
-# ==========================================
-# 5. LÓGICA DE EJECUCIÓN CONCURRENTE
-# ==========================================
-def obtener_etimologia(query):
-    return m_etimologia.generate_content(query).text
-
-def obtener_filosofia(query):
-    return m_filosofia.generate_content(query).text
-
-# ==========================================
-# 6. INTERFAZ DE USUARIO (BÚSQUEDA)
-# ==========================================
-ideograma = st.text_input("Buscar concepto (ej. 道, 1 de riñón, Tian):")
-
-if ideograma:
-    with st.status("Investigando simultáneamente en bases etimológicas y textos clásicos...", expanded=True) asAquí tienes el código optimizado. He aplicado mejoras de rendimiento, concurrencia y he ajustado rigurosamente los prompts del sistema para cumplir con todas tus directrices de traducción y fuentes.
-
-### Principales Optimizaciones:
-*   **Concurrencia (Multithreading):** El mayor cuello de botella era que el modelo de *Etimología* y el de *Filosofía* se ejecutaban secuencialmente. He implementado `concurrent.futures` para que ambas llamadas a la API se ejecuten al mismo tiempo, reduciendo el tiempo de espera a la mitad.
-*   **Precisión de las Fuentes (Prompts):** Se ha introducido explícitamente la prioridad de `https://ctext.org/huangdi-neijing` en el XML de las instrucciones, y se ha especificado que el Hanzi debe ser estrictamente en **Chino Tradicional**.
-*   **Gestión de Errores y Seguridad:** Uso de `st.secrets.get()` que es más seguro y evita lanzar excepciones innecesarias en caso de que la clave no exista.
-*   **Modularidad:** Las llamadas a la API se encapsularon en funciones para mantener un código limpio y escalable.
-
----
-
-### Código Optimizado (`app.py`)
-
-```python
-import streamlit as st
-import google.generativeai as genai
-import concurrent.futures
-
-# ==========================================
-# 1. CONFIGURACIÓN DE LA PÁGINA WEB
-# ==========================================
-st.set_page_config(page_title="Ideogramas y Textos Clásicos", page_icon="⛩️", layout="centered")
-
-st.markdown("""
-    <div style='text-align: center; margin-top: 0px; margin-bottom: 25px;'>
-        <div style='font-family: "Caoshu", "Xingkai SC", "Kaiti", "STKaiti", "KaiTi_GB2312", serif; font-size: 120px; font-weight: normal; color: #111; letter-spacing: 10px; line-height: 1.1;'>
-            玄永
-        </div>
-    </div>
-    <p style='text-align: center; color: #333;'> 玄永 XuánYǒng Etimología y Tratados Clásicos. ©Alfred Bristol</p>
-""", unsafe_allow_html=True)
-
-# ==========================================
-# 2. SEGURIDAD DE LA CLAVE API
-# ==========================================
 MI_CLAVE = st.secrets.get("GEMINI_API_KEY")
 if not MI_CLAVE:
     st.error("🚨 La API Key no está configurada en los secretos del servidor de Streamlit.")
@@ -266,7 +114,7 @@ INSTRUCCIONES_FILOSOFIA = """
     <CONSTRAINT>TRANSLATION_SOURCES>
       <SOURCE text="Yi Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Dao De Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
-      <SOURCE text="Huangdi Neijing">PRIORIDAD ABSOLUTA de referencias: [https://ctext.org/huangdi-neijing](https://ctext.org/huangdi-neijing)</SOURCE>
+      <SOURCE text="Huangdi Neijing">PRIORIDAD ABSOLUTA de referencias: https://ctext.org/huangdi-neijing</SOURCE>
     </CONSTRAINT>
     <REQUIRE>MANDATO ESTRUCTURAL DE CITAS: Para los TRES textos clásicos (Yi Jing, Dao De Jing, Huangdi Neijing), ESTÁS OBLIGADO a presentar PRIMERO la cita textual completa con la Triple Nomenclatura ANTES de añadir cualquier comentario.</REQUIRE>
   </OPERATIONAL_CONSTRAINTS>
@@ -313,7 +161,7 @@ INSTRUCCIONES_FILOSOFIA = """
 
         *Qí Bó dijo:* "Llegar a enumerar sus mecanismos es aproximarse a lo sutil. Como está registrado en los clásicos:"
         
-        ## IV. Huangdi Neijing (Extraído de [https://ctext.org/huangdi-neijing](https://ctext.org/huangdi-neijing))
+        ## IV. Huangdi Neijing (Extraído de https://ctext.org/huangdi-neijing)
         * **Pasaje Fundacional:**
           - [Texto en caracteres chino tradicional]
           - [Pinyin]
