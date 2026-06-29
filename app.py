@@ -14,7 +14,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Integra ideogramas con su raíz etimológica y filosófica a través de los clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Etimología y Tratados Clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
 # ==========================================
@@ -138,12 +138,12 @@ INSTRUCCIONES_FILOSOFIA = """
         
         ## II. Yi Jing (Exclusivamente Trad. Richard Wilhelm)
         * **El Dictamen:** 
-          - [Texto en Chino]
+          - [Texto en caracteres chino tradicional]
           - [Pinyin]
           - [Traducción de Wilhelm]
         * **Síntesis del Dictamen:** (Explicación filosófica a partir del texto).
         * **La Imagen:**
-          - [Texto en Chino]
+          - [Texto en caracteres chino tradicional]
           - [Pinyin]
           - [Traducción de Wilhelm]
         * **Síntesis de la Imagen:** (Explicación filosófica a partir del texto).
@@ -151,20 +151,20 @@ INSTRUCCIONES_FILOSOFIA = """
         *Qí Bó continuó explicando los principios del cielo y la tierra:*
         
         ## III. Dao De Jing (Exclusivamente Trad. Richard Wilhelm)
-        * **Capítulo Completo:**
-          - [Texto en Chino]
+        * **Capítulo:** -[numero del capitulo]
+          - [Texto en caracteres chino tradicional]
           - [Pinyin]
           - [Traducción de Wilhelm]
-        * **Resonancia del Ideograma Clave:** (Explicación profunda de la fuerza del Wu Wei en este capítulo).
+        * **Ideograma Clave:** (Explicación profunda de la fuerza del sentido de este capítulo en base al ideograma, taoismo, wu wei).
 
-        *Qí Bó dijo:* "Llegar a enumerar sus mecanismos es aproximarse a lo sutil. Como está registrado en los clásicos que guardamos en la biblioteca Líng Lán:"
+        *Qí Bó dijo:* "Llegar a enumerar sus mecanismos es aproximarse a lo sutil. Como está registrado en los clásicos:"
         
         ## IV. Huangdi Neijing (Extraído de la memoria clásica)
         * **Pasaje Fundacional:**
-          - [Texto en Chino]
+          - [Texto en caracteres chino tradicional]
           - [Pinyin]
           - [Traducción al Español]
-        * **Fisiopatología Estructural:** (Interpretación médica en canales y resonadores a partir de la cita previa).
+        * **Interpretación:** (Interpretación médica en canales y resonadores a partir de la cita previa).
         
         ## V. Los Tres Tesoros (Shen, Qi, Jing)
         * (Síntesis final extensa).
@@ -194,10 +194,10 @@ REGLAS ESTRICTAS:
 ideograma = st.text_input("Buscar concepto (ej. 道, 1 de riñón, Tian):")
 
 if ideograma:
-    with st.status("Accediendo a la biblioteca Líng Lán y analizando textos clásicos...", expanded=True) as estado:
+    with st.status("Investigando en Etimología y Textos clasicos", expanded=True) as estado:
         
         # --- GEMA 1: ETIMOLOGÍA (Xu Shen) ---
-        st.write("⏳ El Maestro Xu Shen está deconstruyendo el carácter...")
+        st.write("⏳ Etimología")
         m_etimologia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
         res_etimologia = m_etimologia.generate_content(ideograma).text  
             
@@ -221,7 +221,7 @@ if ideograma:
     st.info(resultado_final)
 
     st.markdown("### Tratados Clásicos Extendidos")
-    with st.expander("Ver Análisis Etimológico (Maestro Xu Shen)"):
+    with st.expander("Ver Análisis Etimológico"):
         st.markdown(res_etimologia)
-    with st.expander("Ver Tratado Médico y Filosófico (Maestro Qí Bó)"):
+    with st.expander("Ver Tratado Médico y Filosófico"):
         st.markdown(res_filosofia)
