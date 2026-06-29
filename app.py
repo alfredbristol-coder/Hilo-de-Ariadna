@@ -28,9 +28,9 @@ except:
     st.stop()
 
 # --- MODELOS ---
-# gemini-2.5-flash para los análisis profundos (Etimología y Filosofía)
+# Gemini 2.5 Pro para los análisis profundos (Etimología y Filosofía)
 # gemini-2.5-flash para el Abstract: misma familia, 5-10x más rápido, suficiente para sintetizar
-MODELO_PROFUNDO = "gemini-2.5-flash"
+MODELO_PROFUNDO = "Gemini 2.5 Pro"
 MODELO_RAPIDO   = "gemini-2.5-flash"
 
 # ==========================================
