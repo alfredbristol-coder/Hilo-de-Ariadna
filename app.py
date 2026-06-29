@@ -115,6 +115,7 @@ INSTRUCCIONES_FILOSOFIA = """
     <CONSTRAINT>TRANSLATION_SOURCES>
       <SOURCE text="Yi Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Dao De Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
+      <SOURCE text="Nei Jing">EXCLUSIVAMENTE https://ctext.org/huangdi-neijing </SOURCE>
     </CONSTRAINT>
     <REQUIRE>MANDATO ESTRUCTURAL DE CITAS: Para los TRES textos clásicos (Yi Jing, Dao De Jing, Huangdi Neijing), ESTÁS OBLIGADO a presentar PRIMERO la cita textual completa con la Triple Nomenclatura (Chino, Pinyin, Traducción) ANTES de añadir cualquier comentario, síntesis o interpretación de tu parte.</REQUIRE>
   </OPERATIONAL_CONSTRAINTS>
@@ -183,8 +184,8 @@ INSTRUCCIONES_ABSTRACT = """
 Eres un académico experto en redactar resúmenes ejecutivos (Abstracts) para revistas científicas de sinología y acupuntura. Tu trabajo es leer los dos reportes previos (Etimología y Filosofía/Medicina) y redactar un resumen integrador.
 
 REGLAS ESTRICTAS:
-1. Estilo: Debe ser un 'Abstract' académico clásico. Breve, denso en información, directo y estructurado en un máximo de dos o tres párrafos.
-2. Contenido: Sintetiza el origen gráfico del carácter y cómo este significado fundamenta su uso en la medicina clásica o el taoísmo.
+1. Estilo: Debe ser un Resumen sencillo. Breve, ligero en información, directo y estructurado en un máximo de dos o tres párrafos.
+2. Contenido: Sintetiza el origen gráfico del carácter. Conexión del caracter con el yi jing, dao de jing, nei jing
 3. Cierre: Añade una pequeña línea final con 3 a 5 "Palabras clave".
 4. Terminología: NUNCA uses "meridiano" (usa canal/canales) ni "punto de acupuntura" (usa resonador/resonadores). Reemplaza siempre la palabra "poder" por "fuerza".
 """
@@ -199,17 +200,17 @@ if ideograma:
     with st.status("Accediendo a la biblioteca Líng Lán y analizando textos clásicos...", expanded=True) as estado:
         
         # --- GEMA 1: ETIMOLOGÍA (Xu Shen) ---
-        st.write("⏳ El Maestro Xu Shen está deconstruyendo el carácter...")
+        st.write("⏳ Etimología")
         m_etimologia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
         res_etimologia = m_etimologia.generate_content(ideograma).text  
             
         # --- GEMA 2: FILOSOFÍA Y MEDICINA (Qi Po) ---
-        st.write("⏳ El Médico Celestial Qí Bó está consultando el oráculo y el Neijing...")
+        st.write("⏳ Redactando textos clásicos")
         m_filosofia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_FILOSOFIA)
         res_filosofia = m_filosofia.generate_content(ideograma).text  
 
         # --- NÚCLEO SINTETIZADOR: ABSTRACT ---
-        st.write("✒️ Redactando el Abstract Académico Integrador...")
+        st.write("✒️ Redactando un resumen")
         m_abstract = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ABSTRACT)
         paquete_abstract = f"Información consultada:\n{ideograma}\n\nReporte Etimológico:\n{res_etimologia}\n\nTratado de Qi Po:\n{res_filosofia}"
         resultado_final = m_abstract.generate_content(paquete_abstract).text
@@ -223,7 +224,7 @@ if ideograma:
     st.info(resultado_final)
 
     st.markdown("### Tratados Clásicos Extendidos")
-    with st.expander("Ver Análisis Etimológico (Maestro Xu Shen)"):
+    with st.expander("Ver Análisis Etimológico"):
         st.markdown(res_etimologia)
-    with st.expander("Ver Tratado Médico y Filosófico (Maestro Qí Bó)"):
+    with st.expander("Ver Tratado Médico y Filosófico"):
         st.markdown(res_filosofia)
