@@ -15,7 +15,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Ideogramas y Textos Clásicos. ©Alfred Bristol</p>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Etimología y filosofía Oriental. ©Alfred Bristol</p>", unsafe_allow_html=True)
 
 # ==========================================
 # 2. SEGURIDAD DE LA CLAVE API
