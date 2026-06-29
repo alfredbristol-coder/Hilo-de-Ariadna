@@ -1,5 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
+from concurrent.futures import ThreadPoolExecutor
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
@@ -27,7 +28,11 @@ except:
     st.error("🚨 La API Key no está configurada en los secretos del servidor de Streamlit.")
     st.stop()
 
-MODELO_ESTABLE = 'gemini-2.5-pro'
+# --- MODELOS ---
+# gemini-2.5-pro para los análisis profundos (Etimología y Filosofía)
+# gemini-2.5-flash para el Abstract: misma familia, 5-10x más rápido, suficiente para sintetizar
+MODELO_PROFUNDO = "gemini-2.5-pro"
+MODELO_RAPIDO   = "gemini-2.5-flash"
 
 # ==========================================
 # 3. INSTRUCCIONES DE LAS GEMAS (EXPERTOS)
@@ -116,7 +121,7 @@ INSTRUCCIONES_FILOSOFIA = """
       <SOURCE text="Yi Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Dao De Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Nei Jing">EXCLUSIVAMENTE https://ctext.org/huangdi-neijing </SOURCE>
-    </CONSTRAINT>
+    </TRANSLATION_SOURCES>
     <REQUIRE>MANDATO ESTRUCTURAL DE CITAS: Para los TRES textos clásicos (Yi Jing, Dao De Jing, Huangdi Neijing), ESTÁS OBLIGADO a presentar PRIMERO la cita textual completa con la Triple Nomenclatura (Chino, Pinyin, Traducción) ANTES de añadir cualquier comentario, síntesis o interpretación de tu parte.</REQUIRE>
   </OPERATIONAL_CONSTRAINTS>
 
@@ -191,34 +196,85 @@ REGLAS ESTRICTAS:
 """
 
 # ==========================================
-# 4. INTERFAZ DE USUARIO (BÚSQUEDA DIRECTA)
+# 4. FUNCIONES DE LLAMADA A LA API
+# ==========================================
+
+def _llamar_etimologia(ideograma: str) -> str:
+    """Llamada a la API para Xu Shen (Etimología)."""
+    modelo = genai.GenerativeModel(MODELO_PROFUNDO, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
+    return modelo.generate_content(ideograma).text
+
+
+def _llamar_filosofia(ideograma: str) -> str:
+    """Llamada a la API para Qí Bó (Filosofía y Medicina)."""
+    modelo = genai.GenerativeModel(MODELO_PROFUNDO, system_instruction=INSTRUCCIONES_FILOSOFIA)
+    return modelo.generate_content(ideograma).text
+
+
+# st.cache_data guarda el resultado en disco/memoria de Streamlit.
+# La próxima vez que el usuario consulte el mismo ideograma, la respuesta
+# es instantánea sin gastar tokens ni tiempo de red.
+@st.cache_data(show_spinner=False)
+def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
+    """
+    Ejecuta los tres agentes y devuelve (etimología, filosofía, abstract).
+
+    Estrategia de velocidad:
+      1. Etimología y Filosofía corren EN PARALELO (ThreadPoolExecutor).
+         Tiempo ≈ max(T_etim, T_filos) en lugar de T_etim + T_filos.
+      2. El Abstract usa gemini-2.5-flash (5-10x más rápido que Pro)
+         porque su tarea —sintetizar un resumen breve— no requiere el
+         modelo más potente.
+      3. El Abstract recibe sólo los primeros ~3 000 caracteres de cada
+         reporte: suficiente contexto para un abstract de 3 párrafos y
+         mucho menos tokens de entrada que el texto completo.
+    """
+
+    # --- PASO 1: Etimología y Filosofía en paralelo ---
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futuro_etim  = pool.submit(_llamar_etimologia, ideograma)
+        futuro_filos = pool.submit(_llamar_filosofia,  ideograma)
+        res_etimologia = futuro_etim.result()   # bloquea hasta recibir
+        res_filosofia  = futuro_filos.result()  # bloquea hasta recibir
+
+    # --- PASO 2: Abstract con modelo rápido y contexto acotado ---
+    # Recortamos la entrada: el abstract sólo necesita la esencia,
+    # no los 8 000 tokens completos de cada reporte.
+    extracto_etim  = res_etimologia[:3000]
+    extracto_filos = res_filosofia[:3000]
+
+    paquete_abstract = (
+        f"Información consultada:\n{ideograma}\n\n"
+        f"Reporte Etimológico (extracto):\n{extracto_etim}\n\n"
+        f"Tratado de Qi Po (extracto):\n{extracto_filos}"
+    )
+
+    modelo_abstract = genai.GenerativeModel(
+        MODELO_RAPIDO,
+        system_instruction=INSTRUCCIONES_ABSTRACT,
+    )
+    resultado_final = modelo_abstract.generate_content(paquete_abstract).text
+
+    return res_etimologia, res_filosofia, resultado_final
+
+
+# ==========================================
+# 5. INTERFAZ DE USUARIO
 # ==========================================
 
 ideograma = st.text_input("Buscar concepto (ej. 道, 1 de riñón):")
 
 if ideograma:
-    with st.status("Accediendo a la biblioteca Líng Lán y analizando textos clásicos...", expanded=True) as estado:
-        
-        # --- GEMA 1: ETIMOLOGÍA (Xu Shen) ---
-        st.write("⏳ Etimología")
-        m_etimologia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
-        res_etimologia = m_etimologia.generate_content(ideograma).text  
-            
-        # --- GEMA 2: FILOSOFÍA Y MEDICINA (Qi Po) ---
-        st.write("⏳ Redactando textos clásicos")
-        m_filosofia = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_FILOSOFIA)
-        res_filosofia = m_filosofia.generate_content(ideograma).text  
-
-        # --- NÚCLEO SINTETIZADOR: ABSTRACT ---
-        st.write("✒️ Redactando un resumen")
-        m_abstract = genai.GenerativeModel(MODELO_ESTABLE, system_instruction=INSTRUCCIONES_ABSTRACT)
-        paquete_abstract = f"Información consultada:\n{ideograma}\n\nReporte Etimológico:\n{res_etimologia}\n\nTratado de Qi Po:\n{res_filosofia}"
-        resultado_final = m_abstract.generate_content(paquete_abstract).text
-        
+    with st.status(
+        "Accediendo a la biblioteca Líng Lán y analizando textos clásicos...",
+        expanded=True,
+    ) as estado:
+        st.write("⏳ Xu Shen (Etimología) y Qí Bó (Clásicos) trabajando en paralelo…")
+        res_etimologia, res_filosofia, resultado_final = analizar_concepto(ideograma)
         estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
 
     # ==========================================
-    # 5. MOSTRAR RESULTADOS
+    # 6. MOSTRAR RESULTADOS
     # ==========================================
     st.subheader("Abstract")
     st.info(resultado_final)
