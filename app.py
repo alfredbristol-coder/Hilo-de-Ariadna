@@ -29,7 +29,7 @@ except:
     st.stop()
 
 # --- MODELOS ---
-MODELO_PROFUNDO = "gemini-2.5-pro"
+MODELO_PROFUNDO = "gemini-2.5-flash"
 MODELO_RAPIDO   = "gemini-2.5-flash"
 
 # ==========================================
