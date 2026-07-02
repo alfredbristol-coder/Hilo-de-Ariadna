@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
-from concurrent.futures import ThreadPoolExecutor
+import time
+from google.api_core.exceptions import ResourceExhausted
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
@@ -28,8 +29,6 @@ except:
     st.stop()
 
 # --- MODELOS ---
-# gemini-2.5-pro para los análisis profundos (Etimología y Filosofía)
-# gemini-2.5-flash para el Abstract: misma familia, 5-10x más rápido, suficiente para sintetizar
 MODELO_PROFUNDO = "gemini-2.5-pro"
 MODELO_RAPIDO   = "gemini-2.5-flash"
 
@@ -118,7 +117,6 @@ INSTRUCCIONES_FILOSOFIA = """
     <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA utilices la palabra "meridiano". Usa SIEMPRE "canal" o "canales". A los puntos de acupuntura debes llamarles SIEMPRE "resonadores". EN LUGAR DE "poder" USA SIEMPRE "FUERZA".</CONSTRAINT>
     <CONSTRAINT>CLINICAL_VERIFICATION == "STRICT_PADILLA_PROTOCOL" // ANTES DE EMPEZAR A HABLAR POÉTICAMENTE, estás obligado a cruzar los datos con la nomenclatura de RESONADORES (nombres e ideogramas) del texto "El Tratado del Soplo" o "Los 20 Senderos y sus Valles" de José Luis Padilla Corral (ej. Rangu - 2R, Hegu - 4IG). Se trata de un protocolo de Verificación de Nomenclatura y Desambiguación. Si el usuario mezcla o confunde resonadores, NO asumas que tiene razón; corrígelo amablemente basándote en esta nomenclatura.</CONSTRAINT>
     <CONSTRAINT>TRANSLATION_SOURCES>
-    <CONSTRAINT>TRANSLATION_SOURCES>
       <SOURCE text="Yi Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Dao De Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Nei Jing">EXCLUSIVAMENTE https://ctext.org/huangdi-neijing </SOURCE>
@@ -197,50 +195,51 @@ REGLAS ESTRICTAS:
 """
 
 # ==========================================
-# 4. FUNCIONES DE LLAMADA A LA API
+# 4. FUNCIÓN ROBUSTA CON CONTROL DE CUOTA
 # ==========================================
 
-def _llamar_etimologia(ideograma: str) -> str:
-    """Llamada a la API para Xu Shen (Etimología)."""
-    modelo = genai.GenerativeModel(MODELO_PROFUNDO, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
-    return modelo.generate_content(ideograma).text
+def llamar_api_con_reintentos(modelo, contenido, max_intentos=3, espera_inicial=5):
+    """
+    Intenta llamar a la API de Gemini de forma segura. Si el servidor responde
+    con ResourceExhausted (Cuota excedida/429), espera unos segundos y reintenta.
+    """
+    for intento in range(max_intentos):
+        try:
+            return modelo.generate_content(contenido).text
+        except ResourceExhausted:
+            if intento < max_intentos - 1:
+                # Espera incremental para darle un respiro a la cuota (5s, 10s...)
+                tiempo_espera = espera_inicial * (intento + 1)
+                time.sleep(tiempo_espera)
+            else:
+                # Si se agotan los intentos, levanta el error para gestionarlo en la UI
+                raise ResourceExhausted("La API de Google está saturada en este momento. Por favor, intenta de nuevo en unos minutos.")
 
+# ==========================================
+# 5. PROCESAMIENTO SECUENCIAL SEGURO
+# ==========================================
 
-def _llamar_filosofia(ideograma: str) -> str:
-    """Llamada a la API para Qí Bó (Filosofía y Medicina)."""
-    modelo = genai.GenerativeModel(MODELO_PROFUNDO, system_instruction=INSTRUCCIONES_FILOSOFIA)
-    return modelo.generate_content(ideograma).text
-
-
-# st.cache_data guarda el resultado en disco/memoria de Streamlit.
-# La próxima vez que el usuario consulte el mismo ideograma, la respuesta
-# es instantánea sin gastar tokens ni tiempo de red.
 @st.cache_data(show_spinner=False)
 def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
     """
-    Ejecuta los tres agentes y devuelve (etimología, filosofía, abstract).
-
-    Estrategia de velocidad:
-      1. Etimología y Filosofía corren EN PARALELO (ThreadPoolExecutor).
-         Tiempo ≈ max(T_etim, T_filos) en lugar de T_etim + T_filos.
-      2. El Abstract usa gemini-2.5-flash (5-10x más rápido que Pro)
-         porque su tarea —sintetizar un resumen breve— no requiere el
-         modelo más potente.
-      3. El Abstract recibe sólo los primeros ~3 000 caracteres de cada
-         reporte: suficiente contexto para un abstract de 3 párrafos y
-         mucho menos tokens de entrada que el texto completo.
+    Ejecuta los tres agentes secuencialmente respetando los límites de la API.
+    Añade pequeños retrasos (delays) estratégicos para evitar bloqueos por RPM.
     """
+    # --- AGENTE 1: Etimología ---
+    modelo_etim = genai.GenerativeModel(MODELO_PROFUNDO, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
+    res_etimologia = llamar_api_con_reintentos(modelo_etim, ideograma)
+    
+    # Pausa de cortesía para no encadenar peticiones pesadas en el mismo segundo
+    time.sleep(2)
+    
+    # --- AGENTE 2: Filosofía y Medicina ---
+    modelo_filos = genai.GenerativeModel(MODELO_PROFUNDO, system_instruction=INSTRUCCIONES_FILOSOFIA)
+    res_filosofia = llamar_api_con_reintentos(modelo_filos, ideograma)
+    
+    # Pausa corta antes del resumen
+    time.sleep(1)
 
-    # --- PASO 1: Etimología y Filosofía en paralelo ---
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        futuro_etim  = pool.submit(_llamar_etimologia, ideograma)
-        futuro_filos = pool.submit(_llamar_filosofia,  ideograma)
-        res_etimologia = futuro_etim.result()   # bloquea hasta recibir
-        res_filosofia  = futuro_filos.result()  # bloquea hasta recibir
-
-    # --- PASO 2: Abstract con modelo rápido y contexto acotado ---
-    # Recortamos la entrada: el abstract sólo necesita la esencia,
-    # no los 8 000 tokens completos de cada reporte.
+    # --- AGENTE 3: Abstract (Flash) ---
     extracto_etim  = res_etimologia[:3000]
     extracto_filos = res_filosofia[:3000]
 
@@ -254,34 +253,38 @@ def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
         MODELO_RAPIDO,
         system_instruction=INSTRUCCIONES_ABSTRACT,
     )
-    resultado_final = modelo_abstract.generate_content(paquete_abstract).text
+    resultado_final = llamar_api_con_reintentos(modelo_abstract, paquete_abstract)
 
     return res_etimologia, res_filosofia, resultado_final
 
 
 # ==========================================
-# 5. INTERFAZ DE USUARIO
+# 6. INTERFAZ DE USUARIO
 # ==========================================
 
 ideograma = st.text_input("Buscar concepto (ej. 道, 1 de riñón):")
 
 if ideograma:
-    with st.status(
-        "Analizando textos clásicos...",
-        expanded=True,
-    ) as estado:
-        st.write("⏳ Tomando apuntes de textos clásicos...")
-        res_etimologia, res_filosofia, resultado_final = analizar_concepto(ideograma)
-        estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
+    try:
+        with st.status("Analizando textos clásicos...", expanded=True) as estado:
+            st.write("📖 Consultando al Maestro Xu Shen (Etimología)...")
+            # Se ejecuta secuencialmente dentro de la función analítica
+            res_etimologia, res_filosofia, resultado_final = analizar_concepto(ideograma)
+            estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
 
-    # ==========================================
-    # 6. MOSTRAR RESULTADOS
-    # ==========================================
-    st.subheader("Abstract")
-    st.info(resultado_final)
+        # ==========================================
+        # 7. MOSTRAR RESULTADOS
+        # ==========================================
+        st.subheader("Abstract")
+        st.info(resultado_final)
 
-    st.markdown("### Tratados Clásicos Extendidos")
-    with st.expander("Ver Análisis Etimológico"):
-        st.markdown(res_etimologia)
-    with st.expander("Ver Tratado Médico y Filosófico"):
-        st.markdown(res_filosofia)
+        st.markdown("### Tratados Clásicos Extendidos")
+        with st.expander("Ver Análisis Etimológico"):
+            st.markdown(res_etimologia)
+        with st.expander("Ver Tratado Médico y Filosófico"):
+            st.markdown(res_filosofia)
+            
+    except ResourceExhausted as e:
+        st.error(f"⚠️ **Límite de API alcanzado:** {str(e)}")
+    except Exception as e:
+        st.error(f"🚨 Ocurrió un error inesperado: {str(e)}")
