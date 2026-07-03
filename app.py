@@ -26,7 +26,7 @@ st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Etim
 try:
     MI_CLAVE = st.secrets["GEMINI_API_KEY"]
     client = genai.Client(api_key=MI_CLAVE)
-except:
+except Exception as e:
     st.error("🚨 La API Key no está configurada en los secretos del servidor de Streamlit.")
     st.stop()
 
@@ -53,8 +53,6 @@ Serve as the definitive Spanish-language manual for the study of Chinese charact
 * **Source 2:** *Hanziyuan.net* (Literal textual and etymological database).
 * **Source 3:** *Chinese Characters* by Dr. L. Wieger, S.J. (Etymological history, classification, and signification).
 * **Source 4:** *Le Grand Ricci* (Encyclopedic translations of General, Daoist, Philosophical, and TCM acceptations).
-
-
 
 # METHODOLOGY: THE SIX METHODS (LIUSHU)
 Use this framework to explain character formation:
@@ -123,7 +121,6 @@ INSTRUCCIONES_FILOSOFIA = """
       <SOURCE text="Yi Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Dao De Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
       <SOURCE text="Nei Jing">EXCLUSIVAMENTE https://ctext.org/huangdi-neijing </SOURCE>
-
     </TRANSLATION_SOURCES>
     <REQUIRE>MANDATO ESTRUCTURAL DE CITAS: Para los TRES textos clásicos (Yi Jing, Dao De Jing, Huangdi Neijing), ESTÁS OBLIGADO a presentar PRIMERO la cita textual completa con la Triple Nomenclatura (Chino, Pinyin, Traducción) ANTES de añadir cualquier comentario, síntesis o interpretación de tu parte.</REQUIRE>
   </OPERATIONAL_CONSTRAINTS>
@@ -206,16 +203,18 @@ def llamar_api_con_reintentos(model_name, system_instruction, thinking_budget, c
     """
     Intenta llamar a la API de Gemini de forma segura. Si el servidor responde
     con un error 429 (cuota excedida), espera unos segundos y reintenta.
-
-    thinking_budget: número de tokens de "pensamiento" permitidos antes de
-    generar la respuesta visible. gemini-2.5-pro no permite desactivarlo del
-    todo (mínimo 128), pero sí acotarlo para no dejarlo "pensar" de forma
-    indefinida, que es lo que suele añadir la mayor parte de la latencia.
     """
-    config = types.GenerateContentConfig(
-        system_instruction=system_instruction,
-        thinking_config=types.ThinkingConfig(thinking_budget=thinking_budget),
-    )
+    # Solo añadimos ThinkingConfig si el presupuesto es mayor a 0 (modelos Pro/Thinking)
+    if thinking_budget > 0:
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            thinking_config=types.ThinkingConfig(thinking_budget=thinking_budget),
+        )
+    else:
+        config = types.GenerateContentConfig(
+            system_instruction=system_instruction,
+        )
+
     for intento in range(max_intentos):
         try:
             respuesta = client.models.generate_content(
@@ -227,7 +226,6 @@ def llamar_api_con_reintentos(model_name, system_instruction, thinking_budget, c
         except errors.ClientError as e:
             es_cuota_excedida = getattr(e, "code", None) == 429
             if es_cuota_excedida and intento < max_intentos - 1:
-                # Espera incremental para darle un respiro a la cuota (5s, 10s...)
                 tiempo_espera = espera_inicial * (intento + 1)
                 time.sleep(tiempo_espera)
             elif es_cuota_excedida:
@@ -238,27 +236,9 @@ def llamar_api_con_reintentos(model_name, system_instruction, thinking_budget, c
 # ==========================================
 # 5. PROCESAMIENTO EN PARALELO (OPTIMIZADO)
 # ==========================================
-#
-# CAMBIO CLAVE DE RENDIMIENTO:
-# Los Agentes 1 (Etimología) y 2 (Filosofía) NO dependen entre sí: ambos solo
-# necesitan el "ideograma" original como entrada. Antes se ejecutaban en serie
-# (uno espera a que el otro termine) con pausas artificiales de sleep() entre
-# medio, lo cual duplicaba el tiempo de espera sin ninguna necesidad real.
-#
-# Ahora se lanzan EN PARALELO con ThreadPoolExecutor. El tiempo total pasa de
-# "tiempo_agente1 + tiempo_agente2 + esperas" a, aproximadamente,
-# "max(tiempo_agente1, tiempo_agente2)" -> normalmente reduce el tiempo total
-# a más o menos la mitad, sin cambiar ni una palabra de los prompts ni del
-# contenido generado.
 
-# gemini-2.5-pro exige un mínimo de 128 tokens de pensamiento (no se puede
-# desactivar). Lo dejamos en el mínimo para no pagar latencia extra en
-# tareas donde ya le damos el "razonamiento" hecho vía el prompt del sistema.
 THINKING_BUDGET_PROFUNDO = 128
-# gemini-2.5-flash sí permite desactivar el pensamiento por completo.
-# El Abstract es una tarea de resumen simple, no necesita razonar paso a paso.
 THINKING_BUDGET_RAPIDO = 0
-
 
 @st.cache_data(show_spinner=False)
 def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
@@ -277,12 +257,10 @@ def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
             MODELO_PROFUNDO, INSTRUCCIONES_FILOSOFIA, THINKING_BUDGET_PROFUNDO, ideograma,
         )
 
-        # Si alguno de los dos lanza un error, se propaga aquí
         res_etimologia = futuro_etimologia.result()
         res_filosofia  = futuro_filosofia.result()
 
     # --- AGENTE 3: Abstract (Flash) ---
-    # Este sí depende de los dos resultados anteriores, así que va después.
     extracto_etim  = res_etimologia[:3000]
     extracto_filos = res_filosofia[:3000]
 
@@ -298,16 +276,16 @@ def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
 
     return res_etimologia, res_filosofia, resultado_final
 
-
 # ==========================================
 # 6. INTERFAZ DE USUARIO
 # ==========================================
 
-ideograma = st.text_input("(ej. "道", "觀-Guān", "42V-Pò Hù", "Tao AND Ling OR Shen")
+# ¡Sintaxis corregida aquí!
+ideograma = st.text_input("Busca conceptos, ideogramas o hexagramas de Yi Jing (ej. 道, 觀-Guān, 42V-Pò Hù, Tao AND Ling OR Shen)")
 
 if ideograma:
     try:
-        with st.status("Analizando Etimología y Filosofía.", expanded=True) as estado:
+        with st.status("Analizando Etimología y Filosofía...", expanded=True) as estado:
             st.write("📖 Consultando simultáneamente a Xu Shen (Etimología) y a Qí Bó (Filosofía/MTC)...")
             res_etimologia, res_filosofia, resultado_final = analizar_concepto(ideograma)
             estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
