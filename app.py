@@ -303,11 +303,11 @@ def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
 # 6. INTERFAZ DE USUARIO
 # ==========================================
 
-ideograma = st.text_input("Buscar concepto (ej. 道, 1 de riñón):")
+ideograma = st.text_input("Busca conceptos, ideogramas o hexagramas de Yi Jing (ej. 道, 觀-Guān, 42V-Pò Hù, Tao AND Ling OR Shen)
 
 if ideograma:
     try:
-        with st.status("Analizando textos clásicos (Etimología y Filosofía en paralelo)...", expanded=True) as estado:
+        with st.status("Analizando Etimología y Filosofía.", expanded=True) as estado:
             st.write("📖 Consultando simultáneamente a Xu Shen (Etimología) y a Qí Bó (Filosofía/MTC)...")
             res_etimologia, res_filosofia, resultado_final = analizar_concepto(ideograma)
             estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
