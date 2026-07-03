@@ -1,7 +1,9 @@
 import streamlit as st
-import google.generativeai as genai
+from google import genai
+from google.genai import types
+from google.genai import errors
 import time
-from google.api_core.exceptions import ResourceExhausted
+import concurrent.futures
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
@@ -23,13 +25,13 @@ st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Etim
 # ==========================================
 try:
     MI_CLAVE = st.secrets["GEMINI_API_KEY"]
-    genai.configure(api_key=MI_CLAVE)
+    client = genai.Client(api_key=MI_CLAVE)
 except:
     st.error("🚨 La API Key no está configurada en los secretos del servidor de Streamlit.")
     st.stop()
 
 # --- MODELOS ---
-MODELO_PROFUNDO = "gemini-2.5-flash"
+MODELO_PROFUNDO = "gemini-2.5-pro"
 MODELO_RAPIDO   = "gemini-2.5-flash"
 
 # ==========================================
@@ -50,8 +52,7 @@ Serve as the definitive Spanish-language manual for the study of Chinese charact
 * **Source 1:** *Shuowen Jiezi (說文解字)* by Xu Shen (Structural and radical/Bushou analysis).
 * **Source 2:** *Hanziyuan.net* (Literal textual and etymological database).
 * **Source 3:** *Chinese Characters* by Dr. L. Wieger, S.J. (Etymological history, classification, and signification).
-* **Source 4:** *ABC Etymological Dictionary of Old Chinese* by Axel Schuessler (Phonological shifts over 2,500 years).
-* **Source 5:** *Le Grand Ricci* (Encyclopedic translations of General, Daoist, Philosophical, and TCM acceptations).
+* **Source 4:** *Le Grand Ricci* (Encyclopedic translations of General, Daoist, Philosophical, and TCM acceptations).
 
 # METHODOLOGY: THE SIX METHODS (LIUSHU)
 Use this framework to explain character formation:
@@ -78,7 +79,7 @@ Identify which of the Six Methods applies. Teach the underlying logic clearly so
 Provide a direct exposition on the character's origin and phonological shifts over the last 2,500 years (referencing Schuessler and Wieger).
 
 ## 5. Grand Ricci
-Provide distinct acceptations. You MUST use these exact sub-headers:
+Provide all the acceptations. You MUST use these exact sub-headers:
 * **Acepciones Generales**
 * **Filosofía**
 * **Taoísmo**
@@ -198,48 +199,87 @@ REGLAS ESTRICTAS:
 # 4. FUNCIÓN ROBUSTA CON CONTROL DE CUOTA
 # ==========================================
 
-def llamar_api_con_reintentos(modelo, contenido, max_intentos=3, espera_inicial=5):
+def llamar_api_con_reintentos(model_name, system_instruction, thinking_budget, contenido, max_intentos=3, espera_inicial=5):
     """
     Intenta llamar a la API de Gemini de forma segura. Si el servidor responde
-    con ResourceExhausted (Cuota excedida/429), espera unos segundos y reintenta.
+    con un error 429 (cuota excedida), espera unos segundos y reintenta.
+
+    thinking_budget: número de tokens de "pensamiento" permitidos antes de
+    generar la respuesta visible. gemini-2.5-pro no permite desactivarlo del
+    todo (mínimo 128), pero sí acotarlo para no dejarlo "pensar" de forma
+    indefinida, que es lo que suele añadir la mayor parte de la latencia.
     """
+    config = types.GenerateContentConfig(
+        system_instruction=system_instruction,
+        thinking_config=types.ThinkingConfig(thinking_budget=thinking_budget),
+    )
     for intento in range(max_intentos):
         try:
-            return modelo.generate_content(contenido).text
-        except ResourceExhausted:
-            if intento < max_intentos - 1:
+            respuesta = client.models.generate_content(
+                model=model_name,
+                contents=contenido,
+                config=config,
+            )
+            return respuesta.text
+        except errors.ClientError as e:
+            es_cuota_excedida = getattr(e, "code", None) == 429
+            if es_cuota_excedida and intento < max_intentos - 1:
                 # Espera incremental para darle un respiro a la cuota (5s, 10s...)
                 tiempo_espera = espera_inicial * (intento + 1)
                 time.sleep(tiempo_espera)
+            elif es_cuota_excedida:
+                raise RuntimeError("La API de Google está saturada en este momento. Por favor, intenta de nuevo en unos minutos.")
             else:
-                # Si se agotan los intentos, levanta el error para gestionarlo en la UI
-                raise ResourceExhausted("La API de Google está saturada en este momento. Por favor, intenta de nuevo en unos minutos.")
+                raise
 
 # ==========================================
-# 5. PROCESAMIENTO SECUENCIAL SEGURO
+# 5. PROCESAMIENTO EN PARALELO (OPTIMIZADO)
 # ==========================================
+#
+# CAMBIO CLAVE DE RENDIMIENTO:
+# Los Agentes 1 (Etimología) y 2 (Filosofía) NO dependen entre sí: ambos solo
+# necesitan el "ideograma" original como entrada. Antes se ejecutaban en serie
+# (uno espera a que el otro termine) con pausas artificiales de sleep() entre
+# medio, lo cual duplicaba el tiempo de espera sin ninguna necesidad real.
+#
+# Ahora se lanzan EN PARALELO con ThreadPoolExecutor. El tiempo total pasa de
+# "tiempo_agente1 + tiempo_agente2 + esperas" a, aproximadamente,
+# "max(tiempo_agente1, tiempo_agente2)" -> normalmente reduce el tiempo total
+# a más o menos la mitad, sin cambiar ni una palabra de los prompts ni del
+# contenido generado.
+
+# gemini-2.5-pro exige un mínimo de 128 tokens de pensamiento (no se puede
+# desactivar). Lo dejamos en el mínimo para no pagar latencia extra en
+# tareas donde ya le damos el "razonamiento" hecho vía el prompt del sistema.
+THINKING_BUDGET_PROFUNDO = 128
+# gemini-2.5-flash sí permite desactivar el pensamiento por completo.
+# El Abstract es una tarea de resumen simple, no necesita razonar paso a paso.
+THINKING_BUDGET_RAPIDO = 0
+
 
 @st.cache_data(show_spinner=False)
 def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
     """
-    Ejecuta los tres agentes secuencialmente respetando los límites de la API.
-    Añade pequeños retrasos (delays) estratégicos para evitar bloqueos por RPM.
+    Ejecuta los tres agentes respetando los límites de la API, pero
+    paralelizando las dos llamadas pesadas e independientes (Agente 1 y 2).
     """
-    # --- AGENTE 1: Etimología ---
-    modelo_etim = genai.GenerativeModel(MODELO_PROFUNDO, system_instruction=INSTRUCCIONES_ETIMOLOGIA)
-    res_etimologia = llamar_api_con_reintentos(modelo_etim, ideograma)
-    
-    # Pausa de cortesía para no encadenar peticiones pesadas en el mismo segundo
-    time.sleep(2)
-    
-    # --- AGENTE 2: Filosofía y Medicina ---
-    modelo_filos = genai.GenerativeModel(MODELO_PROFUNDO, system_instruction=INSTRUCCIONES_FILOSOFIA)
-    res_filosofia = llamar_api_con_reintentos(modelo_filos, ideograma)
-    
-    # Pausa corta antes del resumen
-    time.sleep(1)
+    # --- AGENTES 1 y 2 EN PARALELO ---
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        futuro_etimologia = executor.submit(
+            llamar_api_con_reintentos,
+            MODELO_PROFUNDO, INSTRUCCIONES_ETIMOLOGIA, THINKING_BUDGET_PROFUNDO, ideograma,
+        )
+        futuro_filosofia = executor.submit(
+            llamar_api_con_reintentos,
+            MODELO_PROFUNDO, INSTRUCCIONES_FILOSOFIA, THINKING_BUDGET_PROFUNDO, ideograma,
+        )
+
+        # Si alguno de los dos lanza un error, se propaga aquí
+        res_etimologia = futuro_etimologia.result()
+        res_filosofia  = futuro_filosofia.result()
 
     # --- AGENTE 3: Abstract (Flash) ---
+    # Este sí depende de los dos resultados anteriores, así que va después.
     extracto_etim  = res_etimologia[:3000]
     extracto_filos = res_filosofia[:3000]
 
@@ -249,11 +289,9 @@ def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
         f"Tratado de Qi Po (extracto):\n{extracto_filos}"
     )
 
-    modelo_abstract = genai.GenerativeModel(
-        MODELO_RAPIDO,
-        system_instruction=INSTRUCCIONES_ABSTRACT,
+    resultado_final = llamar_api_con_reintentos(
+        MODELO_RAPIDO, INSTRUCCIONES_ABSTRACT, THINKING_BUDGET_RAPIDO, paquete_abstract,
     )
-    resultado_final = llamar_api_con_reintentos(modelo_abstract, paquete_abstract)
 
     return res_etimologia, res_filosofia, resultado_final
 
@@ -266,9 +304,8 @@ ideograma = st.text_input("Buscar concepto (ej. 道, 1 de riñón):")
 
 if ideograma:
     try:
-        with st.status("Analizando textos clásicos...", expanded=True) as estado:
-            st.write("📖 Consultando al Maestro Xu Shen (Etimología)...")
-            # Se ejecuta secuencialmente dentro de la función analítica
+        with st.status("Analizando textos clásicos (Etimología y Filosofía en paralelo)...", expanded=True) as estado:
+            st.write("📖 Consultando simultáneamente a Xu Shen (Etimología) y a Qí Bó (Filosofía/MTC)...")
             res_etimologia, res_filosofia, resultado_final = analizar_concepto(ideograma)
             estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
 
@@ -284,7 +321,7 @@ if ideograma:
         with st.expander("Ver Tratado Médico y Filosófico"):
             st.markdown(res_filosofia)
             
-    except ResourceExhausted as e:
+    except RuntimeError as e:
         st.error(f"⚠️ **Límite de API alcanzado:** {str(e)}")
     except Exception as e:
         st.error(f"🚨 Ocurrió un error inesperado: {str(e)}")
