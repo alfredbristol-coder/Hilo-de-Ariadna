@@ -303,7 +303,7 @@ def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
 # 6. INTERFAZ DE USUARIO
 # ==========================================
 
-ideograma = st.text_input("Busca conceptos, ideogramas o hexagramas de Yi Jing (ej. 道, 觀-Guān, 42V-Pò Hù, Tao AND Ling OR Shen)
+ideograma = st.text_input("(ej. "道", "觀-Guān", "42V-Pò Hù", "Tao AND Ling OR Shen")
 
 if ideograma:
     try:
