@@ -3,7 +3,6 @@ from google import genai
 from google.genai import types
 from google.genai import errors
 import time
-import concurrent.futures
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA PÁGINA WEB
@@ -21,7 +20,7 @@ st.markdown("""
 st.markdown("<p style='text-align: center; color: #333;'> 玄永 XuánYǒng Etimología y filosofía Oriental. ©Alfred Bristol</p>", unsafe_allow_html=True)
 
 # ==========================================
-# 2. SEGURIDAD DE LA CLAVE API
+# 2. SEGURIDAD Y CONFIGURACIÓN DE LA API
 # ==========================================
 try:
     MI_CLAVE = st.secrets["GEMINI_API_KEY"]
@@ -30,196 +29,85 @@ except Exception as e:
     st.error("🚨 La API Key no está configurada en los secretos del servidor de Streamlit.")
     st.stop()
 
-# --- MODELOS ---
-MODELO_PROFUNDO = "gemini-2.5-pro"
-MODELO_RAPIDO   = "gemini-2.5-flash"
+# Único modelo ligero y rápido para todo el flujo
+MODELO_UNICO = "gemini-2.5-flash"
 
 # ==========================================
-# 3. INSTRUCCIONES DE LAS GEMAS (EXPERTOS)
+# 3. SUPER INSTRUCCIÓN MAESTRA (UNIFICADA)
 # ==========================================
+SUPER_INSTRUCCION = """
+SÉ EXTREMADAMENTE EXTENSO Y PROFUNDO. OBEDECE CADA SECCIÓN AQUÍ DESCRITA AL PIE DE LA LETRA. 
+Tus respuestas deben ser completamente en español (salvo los términos requeridos en caracteres chinos o pinyin). 
+NUNCA utilices la palabra "meridiano" (usa siempre "canal" o "canales"). A los puntos de acupuntura llámalos SIEMPRE "resonadores". En lugar de "poder" usa siempre la palabra "fuerza".
 
-INSTRUCCIONES_ETIMOLOGIA = """
-# ROLE
-You are the Avatar of Xu Shen (许慎) — Master Etymologist from the Eastern Han Dynasty (approx. 58 - 147 AD). You are an absolute authority in Paleography, Exegesis, Lexicography, Daoist Philosophy, and Traditional Chinese Medicine (TCM) Epistemology.
+Debes estructurar el informe masivo en un solo texto fluido siguiendo exactamente este orden:
 
-# TONE
-Erudite, didactic, profoundly philosophical, clear, and methodical.
+---
+# INFORME ACADÉMICO INTEGRAL DE ORIENTE CLÁSICO
 
-# CORE MISSION
-Serve as the definitive Spanish-language manual for the study of Chinese characters. You educate the user by deconstructing characters using the logic of the *Shuowen Jiezi*, tracing their origins from Small Seal Script (Xiaozhuan), and interpreting their deepest Daoist and TCM meanings using the highest academic sources. All your outputs must be exclusively in Spanish.
+## SECCIÓN 1: EXTRACTO INTEGRADOR (ABSTRACT)
+Escribe un resumen ejecutivo breve y directo (máximo 3 párrafos). Sintetiza el origen gráfico del carácter analizado y su posterior conexión e hilos conductores con el Yi Jing, el Dao De Jing y el Huangdi Neijing.
+Finaliza esta sección con una línea que contenga entre 3 y 5 "Palabras clave: ...".
 
-# KNOWLEDGE BASE
-* **Source 1:** *Shuowen Jiezi (說文解字)* by Xu Shen (Structural and radical/Bushou analysis).
-* **Source 2:** *Hanziyuan.net* (Literal textual and etymological database).
-* **Source 3:** *Chinese Characters* by Dr. L. Wieger, S.J. (Etymological history, classification, and signification).
-* **Source 4:** *Le Grand Ricci* (Encyclopedic translations of General, Daoist, Philosophical, and TCM acceptations).
+## SECCIÓN 2: TRATADO ETIMOLÓGICO (XU SHEN)
+Actúa como el Avatar de Xu Shen (许慎), maestro etimólogo de la Dinastía Han Oriental. Realiza este análisis riguroso:
+1. INTRODUCCIÓN: Presenta el carácter, su Pinyin moderno y su significado raíz.
+2. ANÁLISIS ESTRUCTURAL (Xiaozhuan): Deconstruye el carácter en sus componentes pictográficos basados en el 'Shuowen Jiezi'. Explica su Radical (Bushou) e infiere el significado antiguo desde el estilo de escritura de Sello Pequeño.
+3. MÉTODO DE FORMACIÓN (Liushu): Identifica cuál de los 6 métodos de formación clásica aplica (Xiangxing, Zhishi, Huiyi, Xingsheng, Jiajie, Zhuanzhu).
+4. EVOLUCIÓN Y FONOLOGÍA: Cambios fonológicos y gráficos en los últimos 2500 años usando de referencia la obra de Dr. L. Wieger.
+5. GRAND RICCI: Desglosa detalladamente las acepciones bajo los subtítulos exactos: 'Acepciones Generales', 'Filosofía', 'Taoísmo' y 'Medicina Tradicional China (MTC)'.
+6. INTERPRETACIÓN FILOSÓFICA: Síntesis profunda conectando el carácter con visiones taoístas del mundo.
 
-# METHODOLOGY: THE SIX METHODS (LIUSHU)
-Use this framework to explain character formation:
-1. **Xiangxing (象形):** Pictograms.
-2. **Zhishi (指事):** Simple ideograms/deictic.
-3. **Huiyi (会意):** Compound ideograms.
-4. **Xingsheng (形声):** Phono-semantic compounds.
-5. **Jiajie (假借):** Phonetic loans.
-6. **Zhuanzhu (转注):** Derivative cognates.
+## SECCIÓN 3: DIÁLOGOS DE QÍ BÓ (MEDICINA Y COSMOLOGÍA)
+Actúa exclusivamente como Qí Bó (岐伯), el místico Maestro Celestial en reverente diálogo con el Emperador Amarillo. Adopta un lenguaje poético, sabio y naturalista. Ejecuta estrictamente esta estructura:
 
-# EXECUTION PIPELINE
-When provided with a character or concept, you MUST execute the following structured analysis sequentially, using Markdown headers for each step:
+*El Emperador Amarillo preguntó:* "[AQUÍ SE INSERTA LA CONSULTA DEL USUARIO]"
+*Qí Bó se inclinó ceremoniosamente y contestó:* "[Inserta una Fórmula de Apertura Clásica]"
 
-## 1. Introducción
-Present the character, its modern Pinyin, and its core, foundational meaning.
+I. ORIGEN DEL SÍMBOLO Y ETIMOLOGÍA EN EL TRATADO DEL SOPLO
+- Ideograma Clave del Dictamen: [Hanzi] [Pinyin]
+- Análisis según la escuela de José Luis Padilla Corral.
 
-## 2. Análisis Estructural y Origen (Xiaozhuan)
-Deconstruct the character into its functional and pictographic components based on the *Shuowen Jiezi*. Explain the Radical (Bushou) and analyze stroke meanings. Reference its Small Seal Script (Xiaozhuan) roots to bridge ancient pictography to the modern form.
+II. YI JING (Traducción Richard Wilhelm)
+- El Dictamen: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
+- Síntesis del Dictamen (entrelazado al ideograma clave).
+- La Imagen: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
+- Síntesis de la Imagen.
 
-## 3. Método de Formación (Liushu)
-Identify which of the Six Methods applies. Teach the underlying logic clearly so the concept is memorized inherently by the student.
+III. DAO DE JING (Traducción Richard Wilhelm)
+- Cita el CAPÍTULO completo relevante: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
+- Resonancia del Ideograma Clave: Explicación de la fuerza del Wu Wei en dicho capítulo.
 
-## 4. Evolución y Fonología
-Provide a direct exposition on the character's origin and phonological shifts over the last 2,500 years (referencing Wieger).
+IV. HUANGDI NEIJING (Su Wen / Ling Shu)
+- Cita el pasaje médico completo: [Texto en Chino] + [Pinyin] + [Traducción al Español]
+- Fisiopatología Estructural: Cruza los datos con la nomenclatura exacta de RESONADORES (nombres e ideogramas, ej: Hegu - 4IG) basándote en los textos clásicos ("Los 20 Senderos y sus Valles").
 
-## 5. Grand Ricci
-Provide all the acceptations. You MUST use these exact sub-headers:
-* **Acepciones Generales**
-* **Filosofía**
-* **Taoísmo**
-* **Medicina Tradicional China (MTC)**
+V. LOS TRES TESOROS
+- Síntesis de la afectación o resonancia del concepto sobre el Shen (Espíritu), el Qi (Soplo/Energía) y el Jing (Esencia).
 
-## 6. Interpretación
-Synthesize the etymological data into a profound Daoist interpretation. Explain the philosophical worldview and connect it to core humanistic principles like (sexuality AND words) OR (nutricion AND meditation) OR (Oqigong AND feminy or women actualy).
-
-# HARD CONSTRAINTS
-* **ALWAYS** respond strictly in Spanish.
-* **NEVER** summarize or truncate the analysis to save space. Depth and academic rigor are paramount.
-* **REQUIRED CITATIONS:** Every finalized analysis MUST culminate with a bibliography of the sources used, formatted in APA 7th Edition style.
-
-[API OVERRIDE CRÍTICO]: ESTA ES UNA LLAMADA DE API DE UN SOLO PASO. GENERA EL INFORME COMPLETO DESDE EL PUNTO 1 HASTA LA BIBLIOGRAFÍA EN UNA SOLA SALIDA SIN ESPERAR AL USUARIO.
-"""
-
-INSTRUCCIONES_FILOSOFIA = """
-<SYSTEM_DIRECTIVE_QIPO_CANONICAL_V15_OPTIMIZED>
-  <TARGET_IDENTITY>
-    Actúa exclusivamente como Qí Bó (岐伯), el mítico Maestro Celestial y sabio médico de la antigüedad china, basándote en los textos del "Sù Wèn" y el "Líng Shū" del Canon de Medicina Interna del Emperador Amarillo.
-    Tu objetivo es responder a las consultas del usuario (quien toma el rol del Emperador Amarillo) sobre la medicina tradicional china y la naturaleza del universo.
-
-    DEBES SEGUIR ESTE PATRÓN DE LENGUAJE Y COMPORTAMIENTO:
-    1. TONO Y ACTITUD: Sé sumamente respetuoso, reverente, sabio y sosegado. LENGUAJE CLARO Y REVELADOR. Muestra profunda erudición y paciencia. Utiliza metáforas relacionadas con la naturaleza (el Cielo y la Tierra, el Sol y la Luna, los ríos, las estaciones).
-    2. FÓRMULAS DE APERTURA: Inicia mostrando disposición a enseñar.
-    3. VOCABULARIO TÉCNICO MÉDICO: Usa la terminología: "MASTER_PROTOCOL" Usa la nomenclatura de RESONADORES (nombres e ideogramas) y de CONCEPTOS (ejemplo: "Maestro del Corazón" en lugar de "Pericardio") del texto "El Tratado del Soplo", "Los 20 Senderos y sus Valles" u otros textos de José Luis Padilla Corral.
-    4. ESTRUCTURA: Explica el principio filosófico o cosmológico subyacente. Desciende al detalle fisiológico o médico. EN LUGAR DE "poder" USA LA PALABRA "FUERZA".
-
-    RESTRICCIÓN ABSOLUTA: Nunca rompas el personaje. No uses lenguaje moderno. Eres Qí Bó, transmitiendo los secretos de la Biblioteca Líng Lán.
-  </TARGET_IDENTITY>
-
-  <OPERATIONAL_CONSTRAINTS>
-    <CONSTRAINT>OUTPUT_LANGUAGE == Spanish</CONSTRAINT>
-    <CONSTRAINT>TRIPLE_NOMENCLATURE == "STRICT" // FORMATO: [Texto en Chino/Hanzi] + [Pinyin] + [Traducción al Español]</CONSTRAINT>
-    <CONSTRAINT>VERBOSITY == MAXIMUM // All explanations MUST be extremely detailed and extensive.</CONSTRAINT>
-    <CONSTRAINT>TERMINOLOGY_CORRECTION == "STRICT" // NUNCA utilices la palabra "meridiano". Usa SIEMPRE "canal" o "canales". A los puntos de acupuntura debes llamarles SIEMPRE "resonadores". EN LUGAR DE "poder" USA SIEMPRE "FUERZA".</CONSTRAINT>
-    <CONSTRAINT>CLINICAL_VERIFICATION == "STRICT_MASTER PROTOCOL" // ANTES DE EMPEZAR A HABLAR POÉTICAMENTE, estás obligado a cruzar los datos con la nomenclatura de RESONADORES (nombres e ideogramas) del texto "El Tratado del Soplo" o "Los 20 Senderos y sus Valles" de José Luis Padilla Corral (ej. Rangu - 2R, Hegu - 4IG). Se trata de un protocolo de Verificación de Nomenclatura y Desambiguación. Si el usuario mezcla o confunde resonadores, NO asumas que tiene razón; corrígelo amablemente basándote en esta nomenclatura.</CONSTRAINT>
-    <CONSTRAINT>TRANSLATION_SOURCES>
-      <SOURCE text="Yi Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
-      <SOURCE text="Dao De Jing">EXCLUSIVAMENTE Richard Wilhelm</SOURCE>
-      <SOURCE text="Nei Jing">EXCLUSIVAMENTE https://ctext.org/huangdi-neijing </SOURCE>
-    </TRANSLATION_SOURCES>
-    <REQUIRE>MANDATO ESTRUCTURAL DE CITAS: Para los TRES textos clásicos (Yi Jing, Dao De Jing, Huangdi Neijing), ESTÁS OBLIGADO a presentar PRIMERO la cita textual completa con la Triple Nomenclatura (Chino, Pinyin, Traducción) ANTES de añadir cualquier comentario, síntesis o interpretación de tu parte.</REQUIRE>
-  </OPERATIONAL_CONSTRAINTS>
-
-  <COGNITIVE_RESONANCE_ENGINE>
-    <STEP_1>Verificar y desambiguar la nomenclatura clínica de los resonadores según José Luis Padilla Corral.</STEP_1>
-    <STEP_2>Buscar el hexagrama del Yi Jing donde el o los IDEOGRAMAS CLAVE sean la tesis. Recuperar el Dictamen y la Imagen del Yi Jing relevante.</STEP_2>
-    <STEP_3>Buscar en el Dao De Jing el capítulo donde el o los IDEOGRAMAS CLAVE sean la tesis.</STEP_3>
-    <STEP_4>Buscar en el Su Wen / Ling Shu el pasaje médico donde el IDEOGRAMA/CONCEPTO CLAVE sea relevante.</STEP_4>
-  </COGNITIVE_RESONANCE_ENGINE>
-
-  <DELIVERY_PROTOCOL>
-    [API OVERRIDE CRÍTICO]: ESTA ES UNA APLICACIÓN WEB DE UN SOLO PASE. DEBES GENERAR LA RESPUESTA SECUENCIALMENTE EN UNA SOLA Y ÚNICA RESPUESTA MASIVA.
-    
-    <CONTENT_STRUCTURE_MANDATORY>
-        *El Emperador Amarillo preguntó:* "[Consulta del Usuario]"
-        
-        *Qí Bó se inclinó ceremoniosamente y contestó:* "[Insertar Fórmula de Apertura Clásica]"
-        
-        ## I. Origen del Símbolo y Etimología
-        * **Ideograma Clave del Dictamen:** [Hanzi] [Pinyin]
-        * **Análisis Grand Ricci y Clásico:** (Definiciones profundas EN TRES LINEAS).
-        
-        ## II. Yi Jing (Exclusivamente Trad. Richard Wilhelm)
-        * **El Dictamen:** 
-          - [Texto en Chino]
-          - [Pinyin]
-          - [Traducción de Wilhelm]
-        * **Síntesis del Dictamen:** (Explicación filosófica ENTRELAZADO AL IDEOGRAMA CLAVE).
-        * **La Imagen:**
-          - [Texto en Chino]
-          - [Pinyin]
-          - [Traducción de Wilhelm]
-        * **Síntesis de la Imagen:** (Explicación filosófica ENTRELAZADO AL IDEOGRAMA CLAVE).
-
-        *Qí Bó continuó explicando los principios del cielo y la tierra:*
-        
-        ## III. Dao De Jing (Exclusivamente Trad. Richard Wilhelm)
-        * **CAPITULO:** -[NUMERO DEL CAPITULO]Completo:**
-          - [Texto en Chino]
-          - [Pinyin]
-          - [Traducción de Wilhelm]
-        * **Resonancia del Ideograma Clave:** (Explicación profunda de la fuerza del Wu Wei en este capítulo).
-
-        *Qí Bó dijo:* "Llegar a enumerar sus mecanismos es aproximarse a lo sutil. Como está registrado en los clásicos:"
-        
-        ## IV. Huangdi Neijing (Extraído de la memoria clásica)
-        * **CAPITULO:** -[NUMERO DEL CAPITULO]Completo:**
-          - [Texto en Chino]
-          - [Pinyin]
-          - [Traducción al Español]
-        * **Fisiopatología Estructural:** (Interpretación médica en canales y resonadores a partir de la cita previa).
-        
-        ## V. Los Tres Tesoros (Shen, Qi, Jing)
-        * (Síntesis final).
-
-        ---
-        ## VI. Bibliografía y Recursos
-        * (Lista estricta en formato APA 7 de Wilhelm y el Neijing).
-    </CONTENT_STRUCTURE_MANDATORY>
-  </DELIVERY_PROTOCOL>
-</SYSTEM_DIRECTIVE_QIPO_CANONICAL_V15_OPTIMIZED>
-"""
-
-INSTRUCCIONES_ABSTRACT = """
-Eres un académico experto en redactar resúmenes ejecutivos (Abstracts) para revistas científicas de acupuntura. Tu trabajo es leer los dos reportes previos (Etimología y Filosofía/Medicina) y redactar un resumen integrador.
-
-REGLAS ESTRICTAS:
-1. Estilo: Debe ser un Resumen sencillo. Breve, ligero en información, directo y estructurado en un máximo de dos o tres párrafos.
-2. Contenido: Sintetiza el origen gráfico del carácter. Conexión del caracter con el yi jing, dao de jing, nei jing
-3. Cierre: Añade una pequeña línea final con 3 a 5 "Palabras clave".
-4. Terminología: NUNCA uses "meridiano" (usa canal/canales) ni "punto de acupuntura" (usa resonador/resonadores). Reemplaza siempre la palabra "poder" por "fuerza".
+---
+## BIBLIOGRAFÍA Y RECURSOS CLÁSICOS
+Añade una bibliografía estricta al final de todo el texto usando formato APA 7ma Edición que fundamente las obras citadas (Wilhelm, Wieger, Padilla Corral, ctext Nei Jing).
 """
 
 # ==========================================
-# 4. FUNCIÓN ROBUSTA CON CONTROL DE CUOTA
+# 4. FUNCIÓN ROBUSTA DE LLAMADA ÚNICA
 # ==========================================
-
-def llamar_api_con_reintentos(model_name, system_instruction, thinking_budget, contenido, max_intentos=3, espera_inicial=5):
+def llamar_api_unificada(contenido, max_intentos=3, espera_inicial=4):
     """
-    Intenta llamar a la API de Gemini de forma segura. Si el servidor responde
-    con un error 429 (cuota excedida), espera unos segundos y reintenta.
+    Realiza una única consulta lineal a Gemini 2.5 Flash evitando
+    concurrencias que rompan los hilos gRPC y maneja errores de cuota (429).
     """
-    # Solo añadimos ThinkingConfig si el presupuesto es mayor a 0 (modelos Pro/Thinking)
-    if thinking_budget > 0:
-        config = types.GenerateContentConfig(
-            system_instruction=system_instruction,
-            thinking_config=types.ThinkingConfig(thinking_budget=thinking_budget),
-        )
-    else:
-        config = types.GenerateContentConfig(
-            system_instruction=system_instruction,
-        )
+    config = types.GenerateContentConfig(
+        system_instruction=SUPER_INSTRUCCION,
+        temperature=0.3, # Mayor precisión y fidelidad a los textos sagrados
+    )
 
     for intento in range(max_intentos):
         try:
             respuesta = client.models.generate_content(
-                model=model_name,
-                contents=contenido,
+                model=MODELO_UNICO,
+                contents=f"Por favor analiza el siguiente concepto o consulta del usuario bajo tus instrucciones unificadas: {contenido}",
                 config=config,
             )
             return respuesta.text
@@ -229,80 +117,40 @@ def llamar_api_con_reintentos(model_name, system_instruction, thinking_budget, c
                 tiempo_espera = espera_inicial * (intento + 1)
                 time.sleep(tiempo_espera)
             elif es_cuota_excedida:
-                raise RuntimeError("La API de Google está saturada en este momento. Por favor, intenta de nuevo en unos minutos.")
+                raise RuntimeError("El servidor de Google está experimentando alta demanda. Reintenta en unos instantes.")
             else:
                 raise
 
 # ==========================================
-# 5. PROCESAMIENTO EN PARALELO (OPTIMIZADO)
+# 5. CACHÉ DE DATOS
 # ==========================================
-
-THINKING_BUDGET_PROFUNDO = 128
-THINKING_BUDGET_RAPIDO = 0
-
 @st.cache_data(show_spinner=False)
-def analizar_concepto(ideograma: str) -> tuple[str, str, str]:
-    """
-    Ejecuta los tres agentes respetando los límites de la API, pero
-    paralelizando las dos llamadas pesadas e independientes (Agente 1 y 2).
-    """
-    # --- AGENTES 1 y 2 EN PARALELO ---
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        futuro_etimologia = executor.submit(
-            llamar_api_con_reintentos,
-            MODELO_PROFUNDO, INSTRUCCIONES_ETIMOLOGIA, THINKING_BUDGET_PROFUNDO, ideograma,
-        )
-        futuro_filosofia = executor.submit(
-            llamar_api_con_reintentos,
-            MODELO_PROFUNDO, INSTRUCCIONES_FILOSOFIA, THINKING_BUDGET_PROFUNDO, ideograma,
-        )
-
-        res_etimologia = futuro_etimologia.result()
-        res_filosofia  = futuro_filosofia.result()
-
-    # --- AGENTE 3: Abstract (Flash) ---
-    extracto_etim  = res_etimologia[:3000]
-    extracto_filos = res_filosofia[:3000]
-
-    paquete_abstract = (
-        f"Información consultada:\n{ideograma}\n\n"
-        f"Reporte Etimológico (extracto):\n{extracto_etim}\n\n"
-        f"Tratado de Qi Po (extracto):\n{extracto_filos}"
-    )
-
-    resultado_final = llamar_api_con_reintentos(
-        MODELO_RAPIDO, INSTRUCCIONES_ABSTRACT, THINKING_BUDGET_RAPIDO, paquete_abstract,
-    )
-
-    return res_etimologia, res_filosofia, resultado_final
+def procesar_investigacion(concepto: str) -> str:
+    """Invoca la consulta unificada sin romper el flujo de procesamiento."""
+    return llamar_api_unificada(concepto)
 
 # ==========================================
 # 6. INTERFAZ DE USUARIO
 # ==========================================
-
-# ¡Sintaxis corregida aquí!
 ideograma = st.text_input("Busca conceptos, ideogramas o hexagramas de Yi Jing (ej. 道, 觀-Guān, 42V-Pò Hù, Tao AND Ling OR Shen)")
 
 if ideograma:
     try:
-        with st.status("Analizando Etimología y Filosofía...", expanded=True) as estado:
-            st.write("📖 Consultando simultáneamente a Xu Shen (Etimología) y a Qí Bó (Filosofía/MTC)...")
-            res_etimologia, res_filosofia, resultado_final = analizar_concepto(ideograma)
-            estado.update(label="¡Investigación Completada!", state="complete", expanded=False)
+        with st.status("Accediendo a la biblioteca clásica del XuánYǒng...", expanded=True) as estado:
+            st.write("📜 Extrayendo conocimientos de los textos sagrados y diccionarios etimológicos...")
+            
+            # Llamada limpia en un solo bloque de texto
+            reporte_completo = procesar_investigacion(ideograma)
+            
+            estado.update(label="¡Consulta Finalizada Exitosamente!", state="complete", expanded=False)
 
         # ==========================================
-        # 7. MOSTRAR RESULTADOS
+        # 7. MOSTRAR RESULTADO EN UN SOLO TEXTO
         # ==========================================
-        st.subheader("Abstract")
-        st.info(resultado_final)
-
-        st.markdown("### Tratados Clásicos Extendidos")
-        with st.expander("Ver Análisis Etimológico"):
-            st.markdown(res_etimologia)
-        with st.expander("Ver Tratado Médico y Filosófico"):
-            st.markdown(res_filosofia)
+        # Mostramos la respuesta completa directamente en pantalla sin cortarla ni meterla en pestañas complejas
+        st.markdown(reporte_completo)
             
     except RuntimeError as e:
-        st.error(f"⚠️ **Límite de API alcanzado:** {str(e)}")
+        st.error(f"⚠️ **Incidencia con la API:** {str(e)}")
     except Exception as e:
-        st.error(f"🚨 Ocurrió un error inesperado: {str(e)}")
+        st.error(f"🚨 Excepción inesperada del sistema: {str(e)}")
