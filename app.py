@@ -65,7 +65,6 @@ Actúa exclusivamente como Qí Bó (岐伯), el místico Maestro Celestial en re
 
 I. ORIGEN DEL SÍMBOLO Y ETIMOLOGÍA EN EL TRATADO DEL SOPLO
 - Ideograma Clave del Dictamen: [Hanzi] [Pinyin]
-- Análisis según la escuela de José Luis Padilla Corral.
 
 II. YI JING (Traducción Richard Wilhelm)
 - El Dictamen: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
