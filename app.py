@@ -68,21 +68,22 @@ II. YI JING (Traducción Richard Wilhelm)
 - Síntesis del Dictamen (entrelazado al ideograma clave).
 - La Imagen: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
 - Síntesis de la Imagen.
+- Resonancia del Ideograma Clave: ¿Que nos aporta el Yi Jing al ideograma o concepto explorado?
 
 III. DAO DE JING (Traducción Richard Wilhelm)
 - Cita el CAPÍTULO completo relevante: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
-- Resonancia del Ideograma Clave: Explicación de la fuerza del Wu Wei en dicho capítulo.
+- Resonancia del Ideograma Clave: ¿Que nos aporta el DAO DE JING al ideograma o concepto explorado?
 
 IV. HUANGDI NEIJING (Su Wen / Ling Shu)
 - Cita el pasaje médico completo: [Texto en Chino] + [Pinyin] + [Traducción al Español] + [Fuente en APA 7]
-- MODO TCM: Se breve, con un lenguaje CLARO, SENCILLO Y REVELADOR. NO REPITAS NADA DE LO DICHO ANTERIORMENTE. Síntesis profunda conectando los tres textos anteriores y sus deducciones humanistas sanadoras en la vida cotidiana.
-
-V. LOS TRES TESOROS
+- Resonancia del Ideograma Clave: ¿Que nos aporta el DAO DE JING al ideograma o concepto explorado?
 - Síntesis de la afectación o resonancia del concepto sobre el Shen (Espíritu), el Qi (Soplo/Energía) y el Jing (Esencia).
 
+V. SÍNTESIS
+- HAZ UNA CONCLUSION BREVE, Una sintesis profunda conectando los tres textos anteriores y sus deducciones humanistas sanadoras en la vida cotidiana. NO REPITAS NADA DE LO DICHO ANTERIORMENTE.
 ---
 ## BIBLIOGRAFÍA Y RECURSOS CLÁSICOS
-Añade una bibliografía estricta al final de todo el texto usando formato APA 7ma Edición que fundamente las obras citadas (Wilhelm, Wieger, Padilla Corral, ctext Nei Jing).
+Añade una bibliografía estricta al final de todo el texto usando formato APA 7ma Edición que fundamente las obras citadas (Wilhelm, Wieger, ctext Nei Jing).
 """
 
 # ==========================================
