@@ -55,7 +55,7 @@ Perform this rigorous analysis:
 3. Formación (Liushu): Identify which of the 6 classical formation methods applies (Xiangxing, Zhishi, Huiyi, Xingsheng, Jiajie, Zhuanzhu).
 4. Evolución: Evolution of the character according to Léon Wieger in "Chinese Characters: Their Origin, Etymology, History, Classification And Signification".
 5. Grand Ricci: Detail the General acceptations. Add IF AVAILABLE: acceptations in 'Filosofía', 'Taoísmo', and 'Medicina Tradicional China (MTC)'.
-6. Nuestra visión: Profound synthesis connecting the character with Daoist worldviews. (ALWAYS specify sources).
+6. Nuestra visión: Profound synthesis connecting the character with Daoist worldviews. (ALWAYS specify sources in APA 7).
 
 ## FILOSOFÍA Y COSMOLOGÍA
 
@@ -131,8 +131,7 @@ ideograma = st.text_input("Busca conceptos, ideogramas o hexagramas de Yi Jing (
 
 if ideograma:
     try:
-        with st.status("Accediendo a la biblioteca clásica del XuánYǒng...", expanded=True) as estado:
-            st.write("📜 Extrayendo conocimientos de los textos sagrados y diccionarios etimológicos...")
+        with st.status("Buscando...", expanded=True)
             
             # Llamada limpia en un solo bloque de texto
             reporte_completo = procesar_investigacion(ideograma)
