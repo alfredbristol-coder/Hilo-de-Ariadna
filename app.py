@@ -140,11 +140,27 @@ if ideograma:
             
             estado.update(label="¡Consulta Finalizada Exitosamente!", state="complete", expanded=False)
 
-        # ==========================================
-        # 7. MOSTRAR RESULTADO EN UN SOLO TEXTO
-        # ==========================================
-        # Mostramos la respuesta completa directamente en pantalla sin cortarla ni meterla en pestañas complejas
-        st.markdown(reporte_completo)
+# ==========================================
+# 7. MOSTRAR RESULTADO EN UN SOLO TEXTO
+# ==========================================
+# Extraemos solo el primer carácter por si el usuario escribió "道 (Tao)"
+caracter_limpio = ideograma[0] 
+
+# Creamos dos columnas: una estrecha para la imagen y otra ancha para el texto
+col_img, col_texto = st.columns([1, 4])
+
+with col_img:
+    # OPCIÓN A: Si usas una API o tienes las imágenes alojadas en tu GitHub/Servidor
+    url_imagen_antigua = f"https://hanziyuan.net/data/xiaozhuan/{caracter_limpio}.svg" # (Ejemplo de URL)
+    
+    # st.image(url_imagen_antigua, caption=f"Evolución de {caracter_limpio}")
+    
+    # OPCIÓN B: Usar HTML para renderizarlo más grande o con una fuente especial
+    st.markdown(f"<div style='font-size: 80px; text-align:center;'>{caracter_limpio}</div>", unsafe_allow_html=True)
+    st.caption("Forma base")
+
+with col_texto:
+    st.markdown(reporte_completo)
             
     except RuntimeError as e:
         st.error(f"⚠️ **Incidencia con la API:** {str(e)}")
