@@ -131,7 +131,7 @@ ideograma = st.text_input("Busca conceptos, ideogramas o hexagramas de Yi Jing (
 
 if ideograma:
     try:
-        with st.status("Buscando.", expanded=True)
+        with st.status("Buscando.", expanded=True) as estado:
             
             # Llamada limpia en un solo bloque de texto
             reporte_completo = procesar_investigacion(ideograma)
