@@ -33,57 +33,56 @@ except Exception as e:
 MODELO_UNICO = "gemini-2.5-flash"
 
 # ==========================================
-# 3. INSTRUCCIÓN MAESTRA
+# 3. INSTRUCCIÓN MAESTRA (OPTIMIZADA EN INGLÉS)
 # ==========================================
 SUPER_INSTRUCCION = """
-SÉ EXTREMADAMENTE EXTENSO Y PROFUNDO. OBEDECE CADA SECCIÓN AQUÍ DESCRITA AL PIE DE LA LETRA. 
-Tus respuestas deben ser completamente en español (salvo los términos requeridos en caracteres chinos o pinyin). 
-NUNCA utilices la palabra "meridiano" (usa siempre "canal" o "canales"). A los puntos de acupuntura llámalos SIEMPRE "resonadores". En lugar de "poder" usa siempre la palabra "fuerza".
+BE EXTREMELY DETAILED AND PROFOUND. FOLLOW EVERY SECTION DESCRIBED HERE STRICTLY.
+CRITICAL RULE: Your final output MUST be entirely in Spanish (except for necessary Chinese characters or Pinyin). 
+NEVER use the word "meridiano" (always use "canal" or "canales"). ALWAYS call acupuncture points "resonadores". Instead of "poder" (power), ALWAYS use the word "fuerza" (force).
 
-Debes estructurar el informe masivo en un solo texto fluido siguiendo exactamente este orden:
+You must structure the massive report in a single fluid text following exactly this order and formatting:
 
 ---
 
 ## PRESENTACIÓN
-Escribe un resumen ejecutivo breve y directo (máximo 3 párrafos). Sintetiza el origen gráfico del carácter analizado y su posterior conexión e hilos conductores con el Yi Jing, el Dao De Jing y el Huangdi Neijing.
-Finaliza esta sección con una línea que contenga entre 3 y 5 "Palabras clave: ...".
+Write a brief and direct executive summary (maximum 3 paragraphs). Synthesize the graphic origin of the analyzed character and its subsequent connection and common threads with the Yi Jing, the Dao De Jing, and the Huangdi Neijing.
+End this section with a single line containing 3 to 5 keywords formatted exactly as: "Palabras clave: [keyword 1], [keyword 2]...".
 
 ## ETIMOLOGÍA
-Realiza este análisis riguroso:
-1. Introducción: Carácter, su Pinyin moderno y su significado raíz.
-2. Análisis (Xiaozhuan): Deconstruye el carácter en sus componentes pictográficos basados en el 'Shuowen Jiezi'. Explica su Radical (Bushou) e infiere el significado antiguo desde los pictogramas en el caparazon de la tortuga hasta la actualidad.
-3. Formación (Liushu): Identifica cuál de los 6 métodos de formación clásica aplica (Xiangxing, Zhishi, Huiyi, Xingsheng, Jiajie, Zhuanzhu).
-4. Evolución: Evolución del caracter según Wieger, Léon en "Chinese Characters: Their Origin, Etymology, History, Classification And Signification" 
-5. Grand Ricci: Desglosa detalladamente las acepciones Generales. Añade SI LAS HAY: las acepciones en 'Filosofía', 'Taoísmo' y 'Medicina Tradicional China (MTC)'.
-6. Nuestra visión: Síntesis profunda conectando el carácter con visiones taoístas del mundo. (especifica SIEMPRE las fuentes).
+Perform this rigorous analysis:
+1. Introducción: The character, its modern Pinyin, and its root meaning.
+2. Análisis (Xiaozhuan): Deconstruct the character into its pictographic components based on the 'Shuowen Jiezi'. Explain its Radical (Bushou) and infer the ancient meaning from pictograms on oracle bones/tortoise shells to the present.
+3. Formación (Liushu): Identify which of the 6 classical formation methods applies (Xiangxing, Zhishi, Huiyi, Xingsheng, Jiajie, Zhuanzhu).
+4. Evolución: Evolution of the character according to Léon Wieger in "Chinese Characters: Their Origin, Etymology, History, Classification And Signification".
+5. Grand Ricci: Detail the General acceptations. Add IF AVAILABLE: acceptations in 'Filosofía', 'Taoísmo', and 'Medicina Tradicional China (MTC)'.
+6. Nuestra visión: Profound synthesis connecting the character with Daoist worldviews. (ALWAYS specify sources).
 
-## (FILOSOFÍA Y COSMOLOGÍA)
+## FILOSOFÍA Y COSMOLOGÍA
 
 I. ORIGEN
-- Ideograma Clave del Dictamen: [Hanzi] [Pinyin] [Traducción al Español]
-- Explica brevemente: Porqué hemos seleccionado este idiograma, sus conexiones conceptuales o ideogramaticas.
+- Core Ideogram: [Hanzi] [Pinyin] [Spanish Translation]
+- Briefly explain: Why this ideogram was selected, its conceptual or ideogrammatic connections.
 
-II. YI JING (Traducción Richard Wilhelm)
-- El Dictamen: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
-- Síntesis del Dictamen (entrelazado al ideograma clave).
-- La Imagen: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
-- Síntesis de la Imagen.
-- Resonancia del Ideograma Clave: ¿Que nos aporta el Yi Jing al ideograma o concepto explorado?
+II. YI JING (Richard Wilhelm Translation)
+- El Dictamen: [Chinese Text] + [Pinyin] + [Wilhelm Translation in Spanish]
+- Synthesis of the Judgement: Intertwined with the core ideogram.
+- La Imagen: [Chinese Text] + [Pinyin] + [Wilhelm Translation in Spanish]
+- Synthesis of the Image.
 
-III. DAO DE JING (Traducción Richard Wilhelm)
-- Cita el CAPÍTULO completo relevante: [Texto en Chino] + [Pinyin] + [Traducción de Wilhelm]
-- Resonancia del Ideograma Clave: ¿Que nos aporta el DAO DE JING al ideograma o concepto explorado?
+III. DAO DE JING (Richard Wilhelm Translation)
+- Quote the complete relevant CHAPTER: [Chinese Text] + [Pinyin] + [Wilhelm Translation in Spanish]
+- Resonance of the Core Ideogram: Explanation of the force of Wu Wei in that chapter.
 
 IV. HUANGDI NEIJING (Su Wen / Ling Shu)
-- Cita el pasaje médico completo: [Texto en Chino] + [Pinyin] + [Traducción al Español] + [Fuente en APA 7]
-- Resonancia del Ideograma Clave: ¿Que nos aporta el DAO DE JING al ideograma o concepto explorado?
-- Síntesis de la afectación o resonancia del concepto sobre el Shen (Espíritu), el Qi (Soplo/Energía) y el Jing (Esencia).
+- Quote the complete medical passage: [Chinese Text] + [Pinyin] + [Spanish Translation] + [Source in APA 7 format]
+- MODO TCM: Be brief, use CLEAR, SIMPLE, AND REVEALING language. DO NOT REPEAT ANYTHING SAID PREVIOUSLY. Profound synthesis connecting the three previous texts and their healing humanistic deductions in daily life.
 
-V. SÍNTESIS
-- HAZ UNA CONCLUSION BREVE, Una sintesis profunda conectando los tres textos anteriores y sus deducciones humanistas sanadoras en la vida cotidiana. NO REPITAS NADA DE LO DICHO ANTERIORMENTE.
+V. LOS TRES TESOROS
+- Synthesis of the concept's resonance or effect on Shen (Spirit), Qi (Breath/Energy), and Jing (Essence).
+
 ---
 ## BIBLIOGRAFÍA Y RECURSOS CLÁSICOS
-Añade una bibliografía estricta al final de todo el texto usando formato APA 7ma Edición que fundamente las obras citadas (Wilhelm, Wieger, ctext Nei Jing).
+Add a strict bibliography at the very end of the text using APA 7th Edition format to support all cited works (Wilhelm, Wieger, Padilla Corral, ctext Nei Jing).
 """
 
 # ==========================================
@@ -103,7 +102,7 @@ def llamar_api_unificada(contenido, max_intentos=3, espera_inicial=4):
         try:
             respuesta = client.models.generate_content(
                 model=MODELO_UNICO,
-                contents=f"Por favor analiza el siguiente concepto o consulta del usuario bajo tus instrucciones unificadas: {contenido}",
+                contents=f"Analyze the following user query based on your unified instructions (Respond in Spanish): {contenido}",
                 config=config,
             )
             return respuesta.text
@@ -140,27 +139,22 @@ if ideograma:
             
             estado.update(label="¡Consulta Finalizada Exitosamente!", state="complete", expanded=False)
 
-# ==========================================
-# 7. MOSTRAR RESULTADO EN UN SOLO TEXTO
-# ==========================================
-# Extraemos solo el primer carácter por si el usuario escribió "道 (Tao)"
-caracter_limpio = ideograma[0] 
-
-# Creamos dos columnas: una estrecha para la imagen y otra ancha para el texto
-col_img, col_texto = st.columns([1, 4])
-
-with col_img:
-    # OPCIÓN A: Si usas una API o tienes las imágenes alojadas en tu GitHub/Servidor
-    url_imagen_antigua = f"https://hanziyuan.net/data/xiaozhuan/{caracter_limpio}.svg" # (Ejemplo de URL)
-    
-    # st.image(url_imagen_antigua, caption=f"Evolución de {caracter_limpio}")
-    
-    # OPCIÓN B: Usar HTML para renderizarlo más grande o con una fuente especial
-    st.markdown(f"<div style='font-size: 80px; text-align:center;'>{caracter_limpio}</div>", unsafe_allow_html=True)
-    st.caption("Forma base")
-
-with col_texto:
-    st.markdown(reporte_completo)
+        # ==========================================
+        # 7. MOSTRAR RESULTADOS 
+        # ==========================================
+        caracter_limpio = ideograma[0] 
+        
+        # Creamos dos columnas
+        col_img, col_texto = st.columns([1, 4])
+        
+        with col_img:
+            # Símbolo renderizado en grande a la izquierda
+            st.markdown(f"<div style='font-size: 80px; text-align:center; padding-top: 20px;'>{caracter_limpio}</div>", unsafe_allow_html=True)
+            st.caption("<p style='text-align:center;'>Forma base</p>", unsafe_allow_html=True)
+            
+        with col_texto:
+            # Texto principal a la derecha
+            st.markdown(reporte_completo)
             
     except RuntimeError as e:
         st.error(f"⚠️ **Incidencia con la API:** {str(e)}")
