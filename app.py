@@ -137,7 +137,7 @@ if ideograma:
             # Llamada limpia en un solo bloque de texto
             reporte_completo = procesar_investigacion(ideograma)
             
-            estado.update(label="¡Consulta Finalizada Exitosamente!", state="complete", expanded=False)
+            estado.update(label="OK", state="complete", expanded=False)
 
         # ==========================================
         # 7. MOSTRAR RESULTADOS 
@@ -148,8 +148,8 @@ if ideograma:
         col_img, col_texto = st.columns([1, 4])
         
         with col_img:
-            # Símbolo renderizado en grande a la izquierda
-            st.markdown(f"<div style='font-size: 80px; text-align:center; padding-top: 20px;'>{caracter_limpio}</div>", unsafe_allow_html=True)
+            # IDEOGRAMA renderizado en grande a la izquierda
+            st.markdown(f"<div style='font-size: 40px; text-align:center; padding-top: 20px;'>{caracter_limpio}</div>", unsafe_allow_html=True)
             st.caption("<p style='text-align:center;'>Forma base</p>", unsafe_allow_html=True)
             
         with col_texto:
