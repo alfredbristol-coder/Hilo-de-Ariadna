@@ -126,7 +126,7 @@ def procesar_investigacion(concepto: str) -> str:
 # ==========================================
 # 6. INTERFAZ DE USUARIO
 # ==========================================
-ideograma = st.text_input("Busca conceptos, ideogramas o hexagramas de Yi Jing (ej. 道, 觀-Guān, 42V-Pò Hù, Tao AND Ling OR Shen)")
+ideograma = st.text_input("Busca conceptos, ideogramas o hexagramas de Yi Jing")
 
 if ideograma:
     try:
