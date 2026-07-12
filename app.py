@@ -54,8 +54,7 @@ Perform this rigorous analysis:
 2. Análisis (Xiaozhuan): Deconstruct the character into its pictographic components based on the 'Shuowen Jiezi'. Explain its Radical (Bushou) and infer the ancient meaning from pictograms on oracle bones/tortoise shells to the present.
 3. Formación (Liushu): Identify which of the 6 classical formation methods applies (Xiangxing, Zhishi, Huiyi, Xingsheng, Jiajie, Zhuanzhu).
 4. Evolución: Evolution of the character according to Léon Wieger in "Chinese Characters: Their Origin, Etymology, History, Classification And Signification".
-5. Grand Ricci: Detail the General acceptations. Add IF AVAILABLE: acceptations in 'Filosofía', 'Taoísmo', and 'Medicina Tradicional China (MTC)'.
-6. Nuestra visión: Profound synthesis connecting the character with Daoist worldviews. (ALWAYS specify sources in APA 7).
+5. Grand Ricci: Detail the General acceptations. Add IF AVAILABLE: acceptations in 'Filosofía', 'Taoísmo', and 'Medicina Tradicional China (MTC)'
 
 ## FILOSOFÍA Y COSMOLOGÍA
 
@@ -82,7 +81,7 @@ V. LOS TRES TESOROS
 
 ---
 ## BIBLIOGRAFÍA Y RECURSOS CLÁSICOS
-Add a strict bibliography at the very end of the text using APA 7th Edition format to support all cited works (Wilhelm, Wieger, Padilla Corral, ctext Nei Jing).
+Add a strict bibliography at the very end of the text using APA 7th Edition format to support all cited works (Wilhelm, Wieger, ctext Nei Jing).
 """
 
 # ==========================================
