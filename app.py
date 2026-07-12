@@ -63,6 +63,7 @@ I. ORIGEN
 - Briefly explain: Why this ideogram was selected, its conceptual or ideogrammatic connections.
 
 II. YI JING (Richard Wilhelm Translation)
+- Hexagrama: [Chinese Text] + [Pinyin] + [Wilhelm Translation in Spanish]
 - El Dictamen: [Chinese Text] + [Pinyin] + [Wilhelm Translation in Spanish]
 - Synthesis of the Judgement: Intertwined with the core ideogram.
 - La Imagen: [Chinese Text] + [Pinyin] + [Wilhelm Translation in Spanish]
